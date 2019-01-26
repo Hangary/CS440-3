@@ -99,19 +99,3 @@ def astar(maze):
     # TODO: Write your code here
     # return path, num_states_explored
     return [], 0
-
-
-def backtrace(parent_map, start, end):
-    """
-    This method is a utility function.
-    It helps us trace the solution path from start to goal.
-    :param parent_map:
-    :param start:
-    :param end:
-    :return: list of path from start to end
-    """
-    path = [end]
-    while path[-1] != start:
-        path.append(parent_map[path[-1]])
-    path.reverse()
-    return path
