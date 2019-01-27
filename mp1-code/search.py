@@ -30,55 +30,44 @@ def search(maze, searchMethod):
         "astar": astar,
     }.get(searchMethod)(maze)
 
-import collections as col
+from collections import deque
 
 def bfs(maze):
     # TODO: Write your code here
     # return path, num_states_explored
-    queue = col.deque([])
-    visited = []
-    parents = dict()
-    cur_shortest = []
-    targets = maze.getObjectives()
     start = maze.getStart()
+    queue = deque([(start, [start])])
+    visited = set()
+    targets = maze.getObjectives()
+    num_states = 0
 
-    parents[start] = (-1, -1)
-    queue.append(start)
-
-    while len(queue) != 0:
-        cur_pos = queue.popleft()
-        cur_visited = []
-        neighbors = maze.getNeighbors(cur_pos[0], cur_pos[1])
-
-        for neighbor in neighbors:
-            if neighbor in visited:
+    while queue:
+        cur,path = queue.popleft()
+        if cur in visited:
+            continue
+        if cur in targets:
+            if len(targets) == 1:
+                return path, num_states
+            targets.remove(cur)
+            queue = deque([(cur, path)])
+            visited = set()
+    
+        visited.add(cur)
+        num_states += 1
+        neighbors = maze.getNeighbors(cur[0], cur[1])
+        for n in neighbors:
+            if n in visited:
                 continue
-            cur_visited.append(neighbor)
-            parents[neighbor] = cur_pos
-            queue.append(neighbor)
-            if neighbor == targets[0]:
-                path = [targets[0]]
-                pos = targets[0]
+            queue.append((n, path+[n]))
 
-                while pos != start:
-                    parent = parents[pos]
-                    path.append(parent)
-                    pos = parent
-
-                if (len(cur_shortest) == 0) or (len(path) < len(cur_shortest)):
-                    cur_shortest = path
-
-                break
-        visited = visited + cur_visited
-
-    return cur_shortest, len(visited)
+    return [], 0
 
 
 def dfs(maze):
     # TODO: Write your code here
     # return path, num_states_explored
     stack = []
-    visited = []
+    visited = set()
     parents = dict()
     
     targets = maze.getObjectives()
@@ -90,14 +79,13 @@ def dfs(maze):
     while len(stack) != 0:
         cur_pos = stack.pop()
         neighbors = maze.getNeighbors(cur_pos[0], cur_pos[1])
-
+        visited.add(cur_pos)
         for neighbor in neighbors:
             if neighbor in visited:
                 continue
 
             parents[neighbor] = cur_pos
             stack.append(neighbor)
-            visited.append(neighbor)
             if neighbor == targets[0]:
                 path = [targets[0]]
                 pos = targets[0]
