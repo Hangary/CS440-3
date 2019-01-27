@@ -91,36 +91,57 @@ def bfs(maze):
 def dfs(maze):
     # TODO: Write your code here
     # return path, num_states_explored
-    stack = []
+    start = maze.getStart()
+    stack = [start]
     visited = set()
     parents = dict()
-    
+
+    result_path = [start]
     targets = maze.getObjectives()
-    start = maze.getStart()
+    num_states = 0
 
-    parents[start] = (-1, -1)
-    stack.append(start)
-
-    while len(stack) != 0:
+    while stack:
         cur_pos = stack.pop()
-        neighbors = maze.getNeighbors(cur_pos[0], cur_pos[1])
+        
+        if cur_pos in visited:
+            continue 
+
+        if cur_pos in targets:
+            
+            path = [cur_pos]
+            pos = cur_pos
+            targets.remove(cur_pos)
+
+            while pos != start:
+                parent = parents[pos]
+                path.append(parent)
+                pos = parent
+            
+            path.pop()
+            path.reverse()
+                
+            result_path += path
+            if len(targets) == 0:
+                return result_path, num_states
+
+            stack = deque([cur_pos])
+            visited = set()
+            parents = dict()
+            start = cur_pos
+            continue
+
         visited.add(cur_pos)
-        for neighbor in neighbors:
-            if neighbor in visited:
+        num_states += 1
+        neighbors = maze.getNeighbors(cur_pos[0], cur_pos[1])
+
+        for n in neighbors:
+            if n in visited:
                 continue
 
-            parents[neighbor] = cur_pos
-            stack.append(neighbor)
-            if neighbor == targets[0]:
-                path = [targets[0]]
-                pos = targets[0]
-
-                while pos != start:
-                    parent = parents[pos]
-                    path.append(parent)
-                    pos = parent
-
-                return path, len(visited)
+            parents[n] = cur_pos
+            stack.append(n)
+            
+    return [], 0
 
 
 def greedy(maze):
