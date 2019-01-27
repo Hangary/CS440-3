@@ -40,17 +40,18 @@ def bfs(maze):
     visited = set()
     parents = dict()
 
-    result_path = []
+    result_path = [start]
     targets = maze.getObjectives()
     num_states = 0
 
-    while len(queue) != 0:
+    while queue:
         cur_pos = queue.popleft()
         
         if cur_pos in visited:
             continue 
 
         if cur_pos in targets:
+            
             path = [cur_pos]
             pos = cur_pos
             targets.remove(cur_pos)
@@ -59,6 +60,9 @@ def bfs(maze):
                 parent = parents[pos]
                 path.append(parent)
                 pos = parent
+            
+            path.pop()
+            path.reverse()
                 
             result_path += path
             if len(targets) == 0:
@@ -68,6 +72,7 @@ def bfs(maze):
             visited = set()
             parents = dict()
             start = cur_pos
+            continue
 
         visited.add(cur_pos)
         num_states += 1
