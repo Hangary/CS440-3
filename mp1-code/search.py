@@ -36,30 +36,50 @@ def bfs(maze):
     # TODO: Write your code here
     # return path, num_states_explored
     start = maze.getStart()
-    queue = deque([(start, [start])])
+    queue = deque([start])
     visited = set()
+    parents = dict()
+
+    result_path = []
     targets = maze.getObjectives()
     num_states = 0
 
-    while queue:
-        cur,path = queue.popleft()
-        if cur in visited:
-            continue
-        if cur in targets:
-            if len(targets) == 1:
-                return path, num_states
-            targets.remove(cur)
-            queue = deque([(cur, path)])
+    while len(queue) != 0:
+        cur_pos = queue.popleft()
+        
+        if cur_pos in visited:
+            continue 
+
+        if cur_pos in targets:
+            path = [cur_pos]
+            pos = cur_pos
+            targets.remove(cur_pos)
+
+            while pos != start:
+                parent = parents[pos]
+                path.append(parent)
+                pos = parent
+                
+            result_path += path
+            if len(targets) == 0:
+                return result_path, num_states
+
+            queue = deque([cur_pos])
             visited = set()
-    
-        visited.add(cur)
+            parents = dict()
+            start = cur_pos
+
+        visited.add(cur_pos)
         num_states += 1
-        neighbors = maze.getNeighbors(cur[0], cur[1])
+        neighbors = maze.getNeighbors(cur_pos[0], cur_pos[1])
+
         for n in neighbors:
             if n in visited:
                 continue
-            queue.append((n, path+[n]))
 
+            parents[n] = cur_pos
+            queue.append(n)
+            
     return [], 0
 
 
