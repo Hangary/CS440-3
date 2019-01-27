@@ -22,6 +22,10 @@ files and classes when code is run, so be careful to not modify anything else.
 # maze is a Maze object based on the maze from the file specified by input filename
 # searchMethod is the search method specified by --method flag (bfs,dfs,greedy,astar)
 from collections import deque
+from heapq import heappop, heappush
+def mht_dis(pos, goal):
+    return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
+
 def search(maze, searchMethod):
     return {
         "bfs": bfs,
@@ -44,14 +48,15 @@ def bfs(maze):
         cur, path = queue.popleft()
         if cur in visited:
             continue
+        visited.add(cur)
+        num_states_explored += 1
         if cur in obj:
             if len(obj) == 1:
                 return path, num_states_explored
             visited = set()
             queue = deque([(cur, path)])
             obj.remove(cur)
-        visited.add(cur)
-        num_states_explored += 1
+            continue
         nei = maze.getNeighbors(cur[0], cur[1])
         for n in nei:
             if n in visited:
@@ -73,14 +78,15 @@ def dfs(maze):
         cur, path = stack.pop()
         if cur in visited:
             continue
+        visited.add(cur)
+        num_states_explored += 1
         if cur in obj:
             if len(obj) == 1:
                 return path, num_states_explored
             visited = set()
             stack = [(cur, path)]
             obj.remove(cur)
-        visited.add(cur)
-        num_states_explored += 1
+            continue
         nei = maze.getNeighbors(cur[0], cur[1])
         for n in nei:
             if n in visited:
@@ -92,10 +98,68 @@ def dfs(maze):
 def greedy(maze):
     # TODO: Write your code here
     # return path, num_states_explored
+    num_states_explored = 0
+    start = maze.getStart()
+    path = [start]
+    obj = maze.getObjectives()
+    visited = set()
+    end = obj[0]
+    queue = []
+    heappush(queue, (mht_dis(start, end), path, start))
+    while queue:
+        _, path, cur = heappop(queue)
+        if cur in visited:
+            continue
+        num_states_explored += 1
+        visited.add(cur)
+        if cur in obj:
+            if len(obj) == 1:
+                return path, num_states_explored
+            obj.remove(cur)
+            start = cur
+            end = obj[0]
+            queue = []
+            heappush(queue, (mht_dis(start, end),path, start))
+            visited = set()
+            continue
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            heappush(queue, (mht_dis(n, end), path + [n], n))
     return [], 0
 
 
 def astar(maze):
     # TODO: Write your code here
     # return path, num_states_explored
+    num_states_explored = 0
+    start = maze.getStart()
+    path = [start]
+    obj = maze.getObjectives()
+    visited = set()
+    end = obj[0]
+    queue = []
+    heappush(queue, (mht_dis(start, end), 0, path, start))
+    while queue:
+        _, cost, path, cur = heappop(queue)
+        if cur in visited:
+            continue
+        num_states_explored += 1
+        visited.add(cur)
+        if cur in obj:
+            if len(obj) == 1:
+                return path, num_states_explored
+            obj.remove(cur)
+            start = cur
+            end = obj[0]
+            queue = []
+            heappush(queue, (mht_dis(start, end), 0, path, start))
+            visited = set()
+            continue
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            heappush(queue, (cost + mht_dis(n, end), cost + 1, path + [n], n))
     return [], 0
