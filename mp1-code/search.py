@@ -31,6 +31,9 @@ def search(maze, searchMethod):
     }.get(searchMethod)(maze)
 
 from collections import deque
+from heapq import heappop, heappush
+def mht_dis(pos, goal):
+    return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
 
 def bfs(maze):
     # TODO: Write your code here
@@ -147,10 +150,102 @@ def dfs(maze):
 def greedy(maze):
     # TODO: Write your code here
     # return path, num_states_explored
+    num_states_explored = 0
+    start = maze.getStart()
+    path = [start]
+    obj = maze.getObjectives()
+    visited = set()
+    end = obj[0]
+    queue = []
+    heappush(queue, (mht_dis(start, end), path, start))
+    while queue:
+        _, path, cur = heappop(queue)
+        if cur in visited:
+            continue
+        num_states_explored += 1
+        visited.add(cur)
+        if cur in obj:
+            if len(obj) == 1:
+                return path, num_states_explored
+            obj.remove(cur)
+            start = cur
+            end = obj[0]
+            queue = []
+            heappush(queue, (mht_dis(start, end),path, start))
+            visited = set()
+            continue
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            heappush(queue, (mht_dis(n, end), path + [n], n))
     return [], 0
 
 
 def astar(maze):
     # TODO: Write your code here
     # return path, num_states_explored
+    num_states_explored = 0
+    start = maze.getStart()
+    path = [start]
+    obj = maze.getObjectives()
+    visited = set()
+    end = obj[0]
+    queue = []
+    heappush(queue, (mht_dis(start, end), 0, path, start))
+
+    heuristic_dict = dict()
+    targets_list = [start] + obj
+    while len(targets_list) > 1:
+        cur = targets_list.pop()
+        for t in targets_list:
+            temp_heu_dict = heuristic(maze, cur, t)
+            heuristic_dict.update(temp_heu_dict)
+
+    cur_heu_dist = heuristic_dict[(start, end)]
+
+    while queue:
+        _, cost, path, cur = heappop(queue)
+        if cur in visited:
+            continue
+        num_states_explored += 1
+        visited.add(cur)
+        if cur in obj:
+            if len(obj) == 1:
+                return path, num_states_explored
+            obj.remove(cur)
+            start = cur
+            end = obj[0]
+            queue = []
+            heappush(queue, (mht_dis(start, end), 0, path, start))
+            visited = set()
+            cur_heu_dist = heuristic_dict[(start, end)]
+            continue
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            heappush(queue, (cost + mht_dis(n, end) + cur_heu_dist, cost + 1, path + [n], n))
     return [], 0
+
+def heuristic(maze, start, end):
+    mst = dict()
+    path = [start]
+    visited = set()
+    queue = []
+    heappush(queue, (mht_dis(start, end), 0, path, start))
+    while queue:
+        _, cost, path, cur = heappop(queue)
+        if cur in visited:
+            continue
+        visited.add(cur)
+        if cur == end:
+            mst[(start, cur)] = len(path)
+            mst[(cur, start)] = len(path)
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            heappush(queue, (cost + mht_dis(n, end), cost + 1, path + [n], n))
+    return mst
+        
