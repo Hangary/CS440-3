@@ -181,8 +181,41 @@ def greedy(maze):
             heappush(queue, (mht_dis(n, end), path + [n], n))
     return [], 0
 
-
 def astar(maze):
+    # TODO: Write your code here
+    # return path, num_states_explored
+    num_states_explored = 0
+    start = maze.getStart()
+    path = [start]
+    obj = maze.getObjectives()
+    visited = set()
+    end = obj[0]
+    queue = []
+    heappush(queue, (mht_dis(start, end), 0, path, start))
+    while queue:
+        _, cost, path, cur = heappop(queue)
+        if cur in visited:
+            continue
+        num_states_explored += 1
+        visited.add(cur)
+        if cur in obj:
+            if len(obj) == 1:
+                return path, num_states_explored
+            obj.remove(cur)
+            start = cur
+            end = obj[0]
+            queue = []
+            heappush(queue, (mht_dis(start, end), 0, path, start))
+            visited = set()
+            continue
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            heappush(queue, (cost + mht_dis(n, end), cost + 1, path + [n], n))
+    return [], 0
+
+def astar2(maze):
     # TODO: Write your code here
     # return path, num_states_explored
     num_states_explored = 0
