@@ -190,9 +190,6 @@ def astar(maze):
     path = [start]
     obj = maze.getObjectives()
     visited = set()
-    end = obj[0]
-    queue = []
-    heappush(queue, (mht_dis(start, end), 0, path, start))
 
     heuristic_dict = dict()
     targets_list = [start] + obj
@@ -201,6 +198,10 @@ def astar(maze):
         for t in targets_list:
             temp_heu_dict = heuristic(maze, cur, t)
             heuristic_dict.update(temp_heu_dict)
+    closest_obj = closest(heuristic_dict, start, obj)
+    end = closest_obj
+    queue = []
+    heappush(queue, (mht_dis(start, end), 0, path, start))
 
     cur_heu_dist = heuristic_dict[(start, end)]
 
@@ -215,10 +216,12 @@ def astar(maze):
                 return path, num_states_explored
             obj.remove(cur)
             start = cur
-            end = obj[0]
+            visited = set()
+
+            closest_obj = closest(heuristic_dict, start, obj)
+            end = closest_obj
             queue = []
             heappush(queue, (mht_dis(start, end), 0, path, start))
-            visited = set()
             cur_heu_dist = heuristic_dict[(start, end)]
             continue
         nei = maze.getNeighbors(cur[0], cur[1])
@@ -248,4 +251,10 @@ def heuristic(maze, start, end):
                 continue
             heappush(queue, (cost + mht_dis(n, end), cost + 1, path + [n], n))
     return mst
-        
+
+def closest(mst, cur, targets):
+    queue = []
+    for t in targets:
+        heappush(queue, (mst[(cur, t)], (cur,t)))
+        _, closest = heappop(queue)
+    return closest[1]
