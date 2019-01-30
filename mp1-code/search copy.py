@@ -154,6 +154,8 @@ def mst(maze):
     mst[start] = []
     dic = {}
     dic[start] = (0, None)
+    l = 0
+    dic2 = {}
     for x in obj:
         mst[x] = []
         dic[x] = (float('inf'), None)
@@ -166,15 +168,18 @@ def mst(maze):
                 minx = x
         par = dic[x][1]
         dic.pop(minx)
+        l += min
         if par is not None:
             mst[minx].append((min, par))
             mst[par].append((min, minx))
         cur = minx
         for x in dic:
             dis = get_dis(cur, x, maze)
+            dic2[(cur,x)] = dis
+            dic2[(x,cur)] = dis
             if dis < dic[x][0]:
                 dic[x] = (dis, cur)
-    return mst
+    return mst, l, dic2
 
 def astar1(maze):
     # TODO: Write your code here
@@ -213,14 +218,14 @@ def astar1(maze):
 def astar(maze):
     # TODO: Write your code here
     # return path, num_states_explored
-    if len(maze.getObjectives()) == 1:
+    if len(maze.getObjectives() == 1):
         return astar1(maze)
     num_states_explored = 0
     start = maze.getStart()
     path = [start]
     obj = maze.getObjectives()
     visited = set()
-    mst_dic = mst(maze)
+    mst_dic, l, dic = mst(maze)
     min = float('inf')
     for x in mst_dic[start]:
         if x[0] < min:
@@ -239,13 +244,12 @@ def astar(maze):
             if mht_dis(cur, x) < min_md:
                 end = x
                 min_md = mht_dis(cur, x)
-        for x in mst_dic[start]:
-            if x[1] == x:
-                min = x[0]
+        min = dic[(start, end)]
         if cur in obj:
             if len(obj) == 1:
                 return path, num_states_explored
             obj.remove(cur)
+            l -= dic[(start, end)]
             start = cur
             min = float('inf')
             for x in mst_dic[start]:
@@ -253,12 +257,12 @@ def astar(maze):
                     min = x[0]
                     end = x[1]
             queue = []
-            heappush(queue, (mht_dis(start, end) + min, 0, path, start))
+            heappush(queue, (mht_dis(start, end) + l - min, 0, path, start))
             visited = set()
             continue
         nei = maze.getNeighbors(cur[0], cur[1])
         for n in nei:
             if n in visited:
                 continue
-            heappush(queue, (cost + mht_dis(n, end) + min, cost + 1, path + [n], n))
+            heappush(queue, (cost + mht_dis(n, end) + l - min, cost + 1, path + [n], n))
     return [], 0
