@@ -213,7 +213,7 @@ def astar1(maze):
 def astar(maze):
     # TODO: Write your code here
     # return path, num_states_explored
-    if len(maze.getObjectives() == 1):
+    if len(maze.getObjectives()) == 1:
         return astar1(maze)
     num_states_explored = 0
     start = maze.getStart()
