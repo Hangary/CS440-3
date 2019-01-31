@@ -218,7 +218,7 @@ def astar1(maze):
 def astar(maze):
     # TODO: Write your code here
     # return path, num_states_explored
-    if len(maze.getObjectives() == 1):
+    if len(maze.getObjectives())==1:
         return astar1(maze)
     num_states_explored = 0
     start = maze.getStart()
@@ -257,12 +257,12 @@ def astar(maze):
                     min = x[0]
                     end = x[1]
             queue = []
-            heappush(queue, (mht_dis(start, end) + l - min, 0, path, start))
+            heappush(queue, (mht_dis(start, end) + l, 0, path, start))
             visited = set()
             continue
         nei = maze.getNeighbors(cur[0], cur[1])
         for n in nei:
             if n in visited:
                 continue
-            heappush(queue, (cost + mht_dis(n, end) + l - min, cost + 1, path + [n], n))
+            heappush(queue, (cost + mht_dis(n, end) + l, cost + 1, path + [n], n))
     return [], 0
