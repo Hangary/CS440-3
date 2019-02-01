@@ -189,11 +189,17 @@ def mst(maze):
     return l, dic2
 
 def mst2(maze, obj, dic2):
+    if len(obj) <= 1:
+        return 0
     dic = {}
     l = 0
+    count = 0
     for x in obj:
+        if count == 0:
+            dic[x] = (0, None)
+            count = 1
+            continue
         dic[x] = (float('inf'), None)
-    dic[obj[0]][0] = 0
     while dic:
         min = float('inf')
         minx = None
@@ -205,6 +211,9 @@ def mst2(maze, obj, dic2):
         l += min
         cur = minx
         for x in dic:
+            if (cur,x) not in dic2.keys():
+                dic2[(cur,x)] = get_dis(cur, x, maze)
+                dic2[(x, cur)] = dic2[(cur,x)]
             dis = dic2[(cur,x)]
             if dis < dic[x][0]:
                 dic[x] = (dis, cur)
@@ -220,42 +229,43 @@ def astar(maze):
     start = maze.getStart()
     path = [start]
     obj = maze.getObjectives()
-    visited = set()
-    min = float('inf')
-    for x in obj:
-        if mht_dis(start, x) < min:
-            min = mht_dis(start, x)
-            end = x
+    visited = {}
+    l, dic2 = mst(maze)
     queue = []
-    heappush(queue, (mht_dis(start, end), 0, path, start))
+    dic = {}
+    t_obj = tuple(obj)
+    dic[t_obj] = l
+    heappush(queue, (l, 0, path, State(start, obj)))
     while queue:
         _, cost, path, cur = heappop(queue)
-        if cur in visited:
+        if hash(cur) in visited.keys():
             continue
+        visited[hash(cur)] = cost
         num_states_explored += 1
-        visited.add(cur)
-        min_md = float('inf')
-        for x in obj:
-            if mht_dis(cur, x) < min_md:
-                end = x
-                min_md = mht_dis(cur, x)
-        if cur in obj:
-            if len(obj) == 1:
+        if cur.pos in cur.obj:
+            if len(cur.obj) == 1:
                 return path, num_states_explored
-            obj.remove(cur)
-            start = cur
-            min = float('inf')
-            for x in obj:
-                if mht_dis(start, x) < min:
-                    min = mht_dis(start, x)
-                    end = x
-            queue = []
-            heappush(queue, (mht_dis(start, end) , 0, path, start))
-            visited = set()
+            cobj = cur.obj.copy()
+            cobj.remove(cur.pos)
+            if tuple(cur.obj) not in dic.keys():
+                dic[tuple(cur.obj)] = mst2(maze, cur.obj, dic2)
+            l = dic[tuple(cur.obj)]
+            heappush(queue, (cost +l , cost, path, State(cur.pos, cobj)))
             continue
-        nei = maze.getNeighbors(cur[0], cur[1])
+        nei = maze.getNeighbors(cur.pos[0], cur.pos[1])
         for n in nei:
-            if n in visited:
+            min_md = float('inf')
+            for x in cur.obj:
+                if mht_dis(n, x) < min_md:
+                    end = x
+                    min_md = mht_dis(n, x)
+            ssobj = cur.obj.copy()
+            ssobj.remove(end)
+            if tuple(ssobj) not in dic.keys():
+                dic[tuple(ssobj)] = mst2(maze, ssobj, dic2)
+            l = dic[tuple(ssobj)]
+            s = State(n, cur.obj)
+            if hash(s) in visited.keys():
                 continue
-            heappush(queue, (cost + mht_dis(n, end) , cost + 1, path + [n], n))
+            heappush(queue, (cost + min_md + l , cost + 1, path + [n], s))
     return [], 0
