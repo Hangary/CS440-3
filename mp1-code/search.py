@@ -14,17 +14,6 @@ within this file -- the unrevised staff files will be used for all other
 files and classes when code is run, so be careful to not modify anything else.
 """
 
-class State():
-    def __init__(self, pos, obj):
-        self.pos = pos
-        self.obj = obj
-
-    def __hash__(self):
-        self.hash = hash((tuple(self.obj), self.pos))
-        return self.hash
-
-
-
 # Search should return the path and the number of states explored.
 # The path should be a list of tuples in the form (row, col) that correspond
 # to the positions of the path taken by your search algorithm.
@@ -35,6 +24,17 @@ from collections import deque
 from heapq import heappop, heappush
 def mht_dis(pos, goal):
     return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
+
+# state class used in bfs and astar search
+# defined as the maze location and the remaining goals
+class State():
+    def __init__(self, pos, obj):
+        self.pos = pos
+        self.obj = obj
+
+    def __hash__(self):
+        self.hash = hash((tuple(self.obj), self.pos))
+        return self.hash
 
 def search(maze, searchMethod):
     return {
@@ -140,6 +140,8 @@ def greedy(maze):
             heappush(queue, (mht_dis(n, end), path + [n], n))
     return [], 0
 
+# single goal astar search using manhattan distance as heuristic
+# return optimal path length between start and end
 def get_dis(start, end, maze):
     visited = set()
     queue = []
@@ -158,35 +160,9 @@ def get_dis(start, end, maze):
             heappush(queue, (cost + mht_dis(n, end), cost + 1, n))
     return [], 0
 
-def mst(maze):
-    start = maze.getStart()
-    obj = maze.getObjectives()
-    dic = {}
-    l = 0
-    dic2 = {}
-    c = 0
-    dic[start] = (0,None)
-    for x in obj:
-        dic[x] = (float('inf'), None)
-    while dic:
-        min = float('inf')
-        minx = None
-        for x in dic:
-            if dic[x][0] < min:
-                min = dic[x][0]
-                minx = x
-        dic.pop(minx)
-        l += min
-        cur = minx
-        for x in dic:
-            dis = get_dis(cur, x, maze)
-            dic2[(cur,x)] = dis
-            dic2[(x,cur)] = dis
-            if dis < dic[x][0]:
-                dic[x] = (dis, cur)
-    return l, dic2
-
-def mst2(maze, obj, dic2):
+# calculate minimum spinning tree for the given objectives
+# return sum of edge length of mst
+def mst(maze, obj, dic2):
     if len(obj) <= 1:
         return 0
     dic = {}
@@ -217,9 +193,9 @@ def mst2(maze, obj, dic2):
                 dic[x] = (dis, cur)
     return l
 
-
-
-
+# multi-goal astar search
+# heuristic = steps_taken_so_far + manhattan distance + sum 
+# of mst edges of remainng goals
 def astar(maze):
     # TODO: Write your code here
     # return path, num_states_explored
@@ -232,7 +208,7 @@ def astar(maze):
     queue = []
     dic = {}
     t_obj = tuple(obj)
-    dic[t_obj] = mst2(maze, obj, dic2)
+    dic[t_obj] = mst(maze, obj, dic2)
     heappush(queue, (0, 0, path, State(start, obj)))
     while queue:
         _, cost, path, cur = heappop(queue)
@@ -246,24 +222,23 @@ def astar(maze):
             cobj = cur.obj.copy()
             cobj.remove(cur.pos)
             if tuple(cur.obj) not in dic.keys():
-                dic[tuple(cur.obj)] = mst2(maze, cur.obj, dic2)
+                dic[tuple(cur.obj)] = mst(maze, cur.obj, dic2)
             l = dic[tuple(cur.obj)]
             heappush(queue, (cost +l , cost, path, State(cur.pos, cobj)))
             continue
         nei = maze.getNeighbors(cur.pos[0], cur.pos[1])
         if tuple(cur.obj) not in dic.keys():
-            dic[tuple(cur.obj)] = mst2(maze, cur.obj, dic2)
+            dic[tuple(cur.obj)] = mst(maze, cur.obj, dic2)
         l = dic[tuple(cur.obj)]
         for n in nei:
             min_md = float('inf')
             for x in cur.obj:
                 if mht_dis(n, x) < min_md:
-                    end = x
                     min_md = mht_dis(n, x)
                     if min_md == 0:
                         break
-            s = State(n, cur.obj)
-            if hash(s) in visited.keys():
+            n_state = State(n, cur.obj)
+            if hash(n_state) in visited.keys():
                 continue
-            heappush(queue, (cost + min_md + l , cost + 1, path + [n], s))
+            heappush(queue, (cost + min_md + l , cost + 1, path + [n], n_state))
     return [], 0
