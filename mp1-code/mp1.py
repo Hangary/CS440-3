@@ -75,6 +75,12 @@ class Application:
             print("Results")
             print("Path Length:", len(path))
             print("States Explored:", statesExplored)
+            for i in range(1, len(path)):
+                first = path[i]
+                second = path[i-1]
+                if abs(first[0] - second[0]) > 1 or abs(first[1] - second[1]) > 1 or first == second:
+                    print("error")
+                    print(first, second)
             self.drawPath(path)
             
         self.drawMaze()

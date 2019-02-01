@@ -35,59 +35,48 @@ from heapq import heappop, heappush
 def mht_dis(pos, goal):
     return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
 
+class state:
+    def __init__(self, cur, explored):
+        self.cur = cur
+        self.explored = explored
+    
+    def __eq__(self, other):
+        return self.cur == other.cur and self.explored == other.explored
+
+    def __hash__(self):
+        return hash(str(self.explored))
+
 def bfs(maze):
     # TODO: Write your code here
     # return path, num_states_explored
+    num_states_explored = 0
     start = maze.getStart()
-    queue = deque([start])
+    path = [start]
+    obj = maze.getObjectives()
     visited = set()
-    parents = dict()
-
-    result_path = [start]
-    targets = maze.getObjectives()
-    num_states = 0
-
+    explored = set()
+    queue = deque([(start, path)])
     while queue:
-        cur_pos = queue.popleft()
-        
-        if cur_pos in visited:
-            continue 
-
-        if cur_pos in targets:
-            
-            path = [cur_pos]
-            pos = cur_pos
-            targets.remove(cur_pos)
-
-            while pos != start:
-                parent = parents[pos]
-                path.append(parent)
-                pos = parent
-            
-            path.pop()
-            path.reverse()
-                
-            result_path += path
-            if len(targets) == 0:
-                return result_path, num_states
-
-            queue = deque([cur_pos])
-            visited = set()
-            parents = dict()
-            start = cur_pos
-            continue
-
-        visited.add(cur_pos)
-        num_states += 1
-        neighbors = maze.getNeighbors(cur_pos[0], cur_pos[1])
-
-        for n in neighbors:
-            if n in visited:
+        cur, path = queue.popleft()
+        explored.add(cur)
+        cur_state = state(cur, explored)
+        visited.add(cur_state)
+        num_states_explored += 1
+        if cur in obj:
+            obj.remove(cur)
+            print(len(obj))
+            if len(obj) == 0:
+                return path, num_states_explored
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            temp_explored = explored.copy()
+            temp_explored.add(n)
+            n_state = state(n, temp_explored)
+            if n_state in visited:
+                print("n in visited")
                 continue
-
-            parents[n] = cur_pos
-            queue.append(n)
-            
+            queue.append((n, path + [n]))
+    print("error")
     return [], 0
 
 
@@ -188,48 +177,46 @@ def astar(maze):
     start = maze.getStart()
     path = [start]
     obj = maze.getObjectives()
-    visited = set()
+    visited = dict()
     end = obj[0]
     queue = []
-    heappush(queue, (heuristic(start, obj), 0, path, start))
+    min = float('inf')
+    for x in obj:
+        if mht_dis(start, x) < min:
+            min = mht_dis(start, x)
+            end = x
+    heappush(queue, (mht_dis(start, end), 0, path, start))
     while queue:
         _, cost, path, cur = heappop(queue)
-        if cur in visited:
-            continue
+        # if cur in visited.keys() and new_heu >= visited[cur]:
+        #     continue
         num_states_explored += 1
-        visited.add(cur)
+        min_md = float('inf')
+        # for x in obj:
+        #     if mht_dis(cur, x) < min_md:
+        #         end = x
+        #         min_md = mht_dis(cur, x)
         if cur in obj:
             if len(obj) == 1:
                 return path, num_states_explored
             obj.remove(cur)
             start = cur
             end = obj[0]
+            min = float('inf')
+            for x in obj:
+                if mht_dis(start, x) < min:
+                    min = mht_dis(start, x)
+                    end = x
             queue = []
-            heappush(queue, (heuristic(start, obj), 0, path, start))
-            visited = set()
+            heappush(queue, (cost + mht_dis(start, end), cost + 1, path, start))
+            visited = dict()
             continue
         nei = maze.getNeighbors(cur[0], cur[1])
         for n in nei:
-            if n in visited:
+            # if n in visited:
+            #     continue
+            if n in visited.keys() and cost + mht_dis(n, end) >= visited[n]:
                 continue
-            heappush(queue, (heuristic(start, obj), cost + 1, path + [n], n))
+            visited[n] = cost + mht_dis(n, end)
+            heappush(queue, (cost + mht_dis(n, end), cost + 1, path + [n], n))
     return [], 0
-
-def estimate(obj): #not in use right now
-    cur = obj.pop()
-    sum = 0
-    while len(obj) >= 1:
-        queue = []
-        for t in obj:
-            heappush(queue, mht_dis(cur, t), t)
-        length, next = heappop(queue)
-        sum += length
-        cur = next
-        obj.pop(cur)
-    return sum
-
-def heuristic(cur, obj):
-    sum = 0
-    for t in obj:
-        sum += mht_dis(cur, t)
-    return sum
