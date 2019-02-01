@@ -91,6 +91,7 @@ def bfs(maze):
         num_states_explored += 1
         if cur.pos in cur.obj:
             if len(cur.obj) == 1:
+                print(path)
                 return path, num_states_explored
             cobj = cur.obj.copy()
             cobj.remove(cur.pos)
@@ -244,6 +245,7 @@ def astar(maze):
         num_states_explored += 1
         if cur.pos in cur.obj:
             if len(cur.obj) == 1:
+                print(path)
                 return path, num_states_explored
             cobj = cur.obj.copy()
             cobj.remove(cur.pos)
@@ -253,19 +255,20 @@ def astar(maze):
             heappush(queue, (cost +l , cost, path, State(cur.pos, cobj)))
             continue
         nei = maze.getNeighbors(cur.pos[0], cur.pos[1])
+        if tuple(cur.obj) not in dic.keys():
+            dic[tuple(cur.obj)] = mst2(maze, cur.obj, dic2)
+        l = dic[tuple(cur.obj)]
         for n in nei:
             min_md = float('inf')
             for x in cur.obj:
                 if mht_dis(n, x) < min_md:
                     end = x
                     min_md = mht_dis(n, x)
-            ssobj = cur.obj.copy()
-            ssobj.remove(end)
-            if tuple(ssobj) not in dic.keys():
-                dic[tuple(ssobj)] = mst2(maze, ssobj, dic2)
-            l = dic[tuple(ssobj)]
+                    if min_md == 0:
+                        break
             s = State(n, cur.obj)
             if hash(s) in visited.keys():
                 continue
             heappush(queue, (cost + min_md + l , cost + 1, path + [n], s))
+
     return [], 0
