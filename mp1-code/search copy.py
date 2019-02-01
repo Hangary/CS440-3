@@ -150,7 +150,7 @@ def get_dis(start, end, maze):
             continue
         visited.add(cur)
         if cur == end:
-            return cost+1
+            return cost
         nei = maze.getNeighbors(cur[0], cur[1])
         for n in nei:
             if n in visited:
@@ -165,11 +165,8 @@ def mst(maze):
     l = 0
     dic2 = {}
     c = 0
+    dic[start] = (0,None)
     for x in obj:
-        if c == 0:
-            dic[x] = (0, None)
-            c = 1
-            break
         dic[x] = (float('inf'), None)
     while dic:
         min = float('inf')
@@ -231,12 +228,12 @@ def astar(maze):
     path = [start]
     obj = maze.getObjectives()
     visited = {}
-    l, dic2 = mst(maze)
+    dic2 = {}
     queue = []
     dic = {}
     t_obj = tuple(obj)
-    dic[t_obj] = l
-    heappush(queue, (l, 0, path, State(start, obj)))
+    dic[t_obj] = mst2(maze, obj, dic2)
+    heappush(queue, (0, 0, path, State(start, obj)))
     while queue:
         _, cost, path, cur = heappop(queue)
         if hash(cur) in visited.keys():
@@ -245,7 +242,6 @@ def astar(maze):
         num_states_explored += 1
         if cur.pos in cur.obj:
             if len(cur.obj) == 1:
-                print(path)
                 return path, num_states_explored
             cobj = cur.obj.copy()
             cobj.remove(cur.pos)
@@ -270,5 +266,4 @@ def astar(maze):
             if hash(s) in visited.keys():
                 continue
             heappush(queue, (cost + min_md + l , cost + 1, path + [n], s))
-
     return [], 0
