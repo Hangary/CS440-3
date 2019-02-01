@@ -53,34 +53,37 @@ def bfs(maze):
     start = maze.getStart()
     path = [start]
     obj = maze.getObjectives()
-    visited = []
-    explored = set()
+    visited = set()
+    # explored = set()
     # initial = state(start, explored)
-    queue = deque([(start, explored, obj, path)])
+    queue = deque([(start, [], obj, path)])
     while queue:
-        cur, explored, obj, path = queue.popleft()
-        # if ([(6,3), (6,2), (5,2), (5,1)] in path):
-        #     print(path)
+        cur, obj_ex, obj, path = queue.popleft()
+        obj_explored = obj_ex.copy()
         obj_left = obj.copy()
-        cur_explored = explored.copy()
-        cur_explored.add(cur)
-        cur_state = (cur, cur_explored)
-        visited.append(cur_state)
-        num_states_explored += 1
+        # cur_explored = explored.copy()
+        # cur_explored.add(cur)
+        # cur_state = (cur, cur_explored)
         if cur in obj_left:
             obj_left.remove(cur)
+            obj_explored.append(cur)
             print(len(obj_left))
             if len(obj_left) == 0:
                 return path, num_states_explored
+        t_obj_ex = tuple(obj_explored)
+        t_obj_left = tuple(obj_left)
+        state = (cur, t_obj_ex, t_obj_left)
+        visited.add(state)
+        num_states_explored += 1
         nei = maze.getNeighbors(cur[0], cur[1])
         for n in nei:
             # temp_explored = cur_explored.copy()
             # temp_explored.add(n)
-            n_state = (n, cur_explored)
+            n_state = (n, t_obj_ex, t_obj_left)
             if n_state in visited:
                 # print("n in visited")
                 continue
-            queue.append((n, cur_explored, obj_left, path + [n]))
+            queue.append((n, obj_explored, obj_left, path + [n]))
     return [], 0
 
 
