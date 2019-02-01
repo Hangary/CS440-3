@@ -14,6 +14,16 @@ within this file -- the unrevised staff files will be used for all other
 files and classes when code is run, so be careful to not modify anything else.
 """
 
+class State():
+    def __init__(self, pos, obj):
+        self.pos = pos
+        self.obj = obj
+
+    def __hash__(self):
+        self.hash = hash((tuple(self.obj), self.pos))
+        return self.hash
+
+
 
 # Search should return the path and the number of states explored.
 # The path should be a list of tuples in the form (row, col) that correspond
@@ -21,6 +31,10 @@ files and classes when code is run, so be careful to not modify anything else.
 # Number of states explored should be a number.
 # maze is a Maze object based on the maze from the file specified by input filename
 # searchMethod is the search method specified by --method flag (bfs,dfs,greedy,astar)
+from collections import deque
+from heapq import heappop, heappush
+def mht_dis(pos, goal):
+    return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
 
 def search(maze, searchMethod):
     return {
@@ -30,21 +44,35 @@ def search(maze, searchMethod):
         "astar": astar,
     }.get(searchMethod)(maze)
 
-from collections import deque
-from heapq import heappop, heappush
-def mht_dis(pos, goal):
-    return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
 
-class state:
-    def __init__(self, cur, explored):
-        self.cur = cur
-        self.explored = explored
-    
-    def __eq__(self, other):
-        return self.cur == other.cur and self.explored == other.explored
-
-    def __hash__(self):
-        return hash(str(self.explored))
+def dfs(maze):
+    # TODO: Write your code here
+    # return path, num_states_explored
+    num_states_explored = 0
+    start = maze.getStart()
+    path = [start]
+    obj = maze.getObjectives()
+    visited = set()
+    stack = [(start, path)]
+    while stack:
+        cur, path = stack.pop()
+        if cur in visited:
+            continue
+        visited.add(cur)
+        num_states_explored += 1
+        if cur in obj:
+            if len(obj) == 1:
+                return path, num_states_explored
+            visited = set()
+            stack = [(cur, path)]
+            obj.remove(cur)
+            continue
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            stack.append((n, path + [n]))
+    return [], 0
 
 def bfs(maze):
     # TODO: Write your code here
@@ -53,93 +81,28 @@ def bfs(maze):
     start = maze.getStart()
     path = [start]
     obj = maze.getObjectives()
-    visited = set()
-    # explored = set()
-    # initial = state(start, explored)
-    queue = deque([(start, [], obj, path)])
+    visited = {}
+    queue = deque([(State(start, obj), path)])
     while queue:
-        cur, obj_ex, obj, path = queue.popleft()
-        obj_explored = obj_ex.copy()
-        obj_left = obj.copy()
-        # cur_explored = explored.copy()
-        # cur_explored.add(cur)
-        # cur_state = (cur, cur_explored)
-        if cur in obj_left:
-            obj_left.remove(cur)
-            obj_explored.append(cur)
-            print(len(obj_left))
-            if len(obj_left) == 0:
-                return path, num_states_explored
-        t_obj_ex = tuple(obj_explored)
-        t_obj_left = tuple(obj_left)
-        state = (cur, t_obj_ex, t_obj_left)
-        visited.add(state)
-        num_states_explored += 1
-        nei = maze.getNeighbors(cur[0], cur[1])
-        for n in nei:
-            # temp_explored = cur_explored.copy()
-            # temp_explored.add(n)
-            n_state = (n, t_obj_ex, t_obj_left)
-            if n_state in visited:
-                # print("n in visited")
-                continue
-            queue.append((n, obj_explored, obj_left, path + [n]))
-    return [], 0
-
-
-def dfs(maze):
-    # TODO: Write your code here
-    # return path, num_states_explored
-    start = maze.getStart()
-    stack = [start]
-    visited = set()
-    parents = dict()
-
-    result_path = [start]
-    targets = maze.getObjectives()
-    num_states = 0
-
-    while stack:
-        cur_pos = stack.pop()
-        
-        if cur_pos in visited:
-            continue 
-
-        if cur_pos in targets:
-            
-            path = [cur_pos]
-            pos = cur_pos
-            targets.remove(cur_pos)
-
-            while pos != start:
-                parent = parents[pos]
-                path.append(parent)
-                pos = parent
-            
-            path.pop()
-            path.reverse()
-                
-            result_path += path
-            if len(targets) == 0:
-                return result_path, num_states
-
-            stack = deque([cur_pos])
-            visited = set()
-            parents = dict()
-            start = cur_pos
+        cur, path= queue.popleft()
+        if hash(cur) in visited.keys():
             continue
-
-        visited.add(cur_pos)
-        num_states += 1
-        neighbors = maze.getNeighbors(cur_pos[0], cur_pos[1])
-
-        for n in neighbors:
-            if n in visited:
+        visited[hash(cur)] = 1
+        num_states_explored += 1
+        if cur.pos in cur.obj:
+            if len(cur.obj) == 1:
+                print(path)
+                return path, num_states_explored
+            cobj = cur.obj.copy()
+            cobj.remove(cur.pos)
+            queue.append((State(cur.pos, cobj), path))
+            continue
+        nei = maze.getNeighbors(cur.pos[0], cur.pos[1])
+        for n in nei:
+            s = State(n, cur.obj)
+            if hash(s) in visited.keys():
                 continue
-
-            parents[n] = cur_pos
-            stack.append(n)
-            
+            queue.append((s, path + [n]))
     return [], 0
 
 
@@ -177,6 +140,86 @@ def greedy(maze):
             heappush(queue, (mht_dis(n, end), path + [n], n))
     return [], 0
 
+def get_dis(start, end, maze):
+    visited = set()
+    queue = []
+    heappush(queue, (mht_dis(start, end), 0, start))
+    while queue:
+        _, cost, cur = heappop(queue)
+        if cur in visited:
+            continue
+        visited.add(cur)
+        if cur == end:
+            return cost
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            heappush(queue, (cost + mht_dis(n, end), cost + 1, n))
+    return [], 0
+
+def mst(maze):
+    start = maze.getStart()
+    obj = maze.getObjectives()
+    dic = {}
+    l = 0
+    dic2 = {}
+    c = 0
+    dic[start] = (0,None)
+    for x in obj:
+        dic[x] = (float('inf'), None)
+    while dic:
+        min = float('inf')
+        minx = None
+        for x in dic:
+            if dic[x][0] < min:
+                min = dic[x][0]
+                minx = x
+        dic.pop(minx)
+        l += min
+        cur = minx
+        for x in dic:
+            dis = get_dis(cur, x, maze)
+            dic2[(cur,x)] = dis
+            dic2[(x,cur)] = dis
+            if dis < dic[x][0]:
+                dic[x] = (dis, cur)
+    return l, dic2
+
+def mst2(maze, obj, dic2):
+    if len(obj) <= 1:
+        return 0
+    dic = {}
+    l = 0
+    count = 0
+    for x in obj:
+        if count == 0:
+            dic[x] = (0, None)
+            count = 1
+            continue
+        dic[x] = (float('inf'), None)
+    while dic:
+        min = float('inf')
+        minx = None
+        for x in dic:
+            if dic[x][0] < min:
+                min = dic[x][0]
+                minx = x
+        dic.pop(minx)
+        l += min
+        cur = minx
+        for x in dic:
+            if (cur,x) not in dic2.keys():
+                dic2[(cur,x)] = get_dis(cur, x, maze)
+                dic2[(x, cur)] = dic2[(cur,x)]
+            dis = dic2[(cur,x)]
+            if dis < dic[x][0]:
+                dic[x] = (dis, cur)
+    return l
+
+
+
+
 def astar(maze):
     # TODO: Write your code here
     # return path, num_states_explored
@@ -184,46 +227,43 @@ def astar(maze):
     start = maze.getStart()
     path = [start]
     obj = maze.getObjectives()
-    visited = dict()
-    end = obj[0]
+    visited = {}
+    dic2 = {}
     queue = []
-    min = float('inf')
-    for x in obj:
-        if mht_dis(start, x) < min:
-            min = mht_dis(start, x)
-            end = x
-    heappush(queue, (mht_dis(start, end), 0, path, start))
+    dic = {}
+    t_obj = tuple(obj)
+    dic[t_obj] = mst2(maze, obj, dic2)
+    heappush(queue, (0, 0, path, State(start, obj)))
     while queue:
         _, cost, path, cur = heappop(queue)
-        # if cur in visited.keys() and new_heu >= visited[cur]:
-        #     continue
-        num_states_explored += 1
-        min_md = float('inf')
-        # for x in obj:
-        #     if mht_dis(cur, x) < min_md:
-        #         end = x
-        #         min_md = mht_dis(cur, x)
-        if cur in obj:
-            if len(obj) == 1:
-                return path, num_states_explored
-            obj.remove(cur)
-            start = cur
-            end = obj[0]
-            min = float('inf')
-            for x in obj:
-                if mht_dis(start, x) < min:
-                    min = mht_dis(start, x)
-                    end = x
-            queue = []
-            heappush(queue, (cost + mht_dis(start, end), cost + 1, path, start))
-            visited = dict()
+        if hash(cur) in visited.keys():
             continue
-        nei = maze.getNeighbors(cur[0], cur[1])
+        visited[hash(cur)] = cost
+        num_states_explored += 1
+        if cur.pos in cur.obj:
+            if len(cur.obj) == 1:
+                return path, num_states_explored
+            cobj = cur.obj.copy()
+            cobj.remove(cur.pos)
+            if tuple(cur.obj) not in dic.keys():
+                dic[tuple(cur.obj)] = mst2(maze, cur.obj, dic2)
+            l = dic[tuple(cur.obj)]
+            heappush(queue, (cost +l , cost, path, State(cur.pos, cobj)))
+            continue
+        nei = maze.getNeighbors(cur.pos[0], cur.pos[1])
+        if tuple(cur.obj) not in dic.keys():
+            dic[tuple(cur.obj)] = mst2(maze, cur.obj, dic2)
+        l = dic[tuple(cur.obj)]
         for n in nei:
-            # if n in visited:
-            #     continue
-            if n in visited.keys() and cost + mht_dis(n, end) >= visited[n]:
+            min_md = float('inf')
+            for x in cur.obj:
+                if mht_dis(n, x) < min_md:
+                    end = x
+                    min_md = mht_dis(n, x)
+                    if min_md == 0:
+                        break
+            s = State(n, cur.obj)
+            if hash(s) in visited.keys():
                 continue
-            visited[n] = cost + mht_dis(n, end)
-            heappush(queue, (cost + mht_dis(n, end), cost + 1, path + [n], n))
+            heappush(queue, (cost + min_md + l , cost + 1, path + [n], s))
     return [], 0
