@@ -238,7 +238,8 @@ def astar(maze):
                     if min_md == 0:
                         break
             n_state = State(n, cur.obj)
-            if hash(n_state) in visited.keys():
+            n_cost = cost + min_md + l
+            if hash(n_state) in visited.keys() and visited[hash(n_state)] >= n_cost:
                 continue
-            heappush(queue, (cost + min_md + l , cost + 1, path + [n], n_state))
+            heappush(queue, (n_cost, cost + 1, path + [n], n_state))
     return [], 0
