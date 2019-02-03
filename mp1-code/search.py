@@ -91,7 +91,6 @@ def bfs(maze):
         num_states_explored += 1
         if cur.pos in cur.obj:
             if len(cur.obj) == 1:
-                print(path)
                 return path, num_states_explored
             cobj = cur.obj.copy()
             cobj.remove(cur.pos)
@@ -243,3 +242,41 @@ def astar(maze):
                 continue
             heappush(queue, (n_cost, cost + 1, path + [n], n_state))
     return [], 0
+
+def astar_extra_credit(maze):
+    # TODO: Write your code here
+    # return path, num_states_explored
+    num_states_explored = 0
+    start = maze.getStart()
+    path = [start]
+    obj = maze.getObjectives()
+    visited = set()
+    queue = []
+    heappush(queue, (heuristic(start, obj), 0, path, start))
+    while queue:
+        _, cost, path, cur = heappop(queue)
+        if cur in visited:
+            continue
+        num_states_explored += 1
+        visited.add(cur)
+        if cur in obj:
+            obj.remove(cur)
+            if len(obj) == 0:
+                return path, num_states_explored
+            start = cur
+            queue = []
+            heappush(queue, (heuristic(start, obj), 0, path, start))
+            visited = set()
+            continue
+        nei = maze.getNeighbors(cur[0], cur[1])
+        for n in nei:
+            if n in visited:
+                continue
+            heappush(queue, (heuristic(start, obj), cost + 1, path + [n], n))
+    return [], 0
+
+def heuristic(cur, obj):
+    sum = 0
+    for t in obj:
+        sum += mht_dis(cur, t)
+    return sum
