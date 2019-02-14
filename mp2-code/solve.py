@@ -44,7 +44,7 @@ def recursion(board, pents, solution):
                             else:
                                 cor_dict[coordinate].append(ori_pent)
     
-    for coor in sorted(cor_dict, key=lambda coor: len(cor_dict[coor]), reverse=True):
+    for coor in sorted(cor_dict, key=lambda coor: len(cor_dict[coor]), reverse=False):
         pents_list = cor_dict[coor].copy()
         for pent in sorted(pents_list, key=lambda pent: len(pent_dict[get_pent_idx(pent)]), reverse=False):
             p_idx = get_pent_idx(pent)
@@ -130,28 +130,36 @@ def get_pent_idx(pent):
     return pidx - 1
 
 def generate_ori(pent):
-    # l = []
-    # duplicate = set()
-    # for i in range(4):
-    #     rot_pent = np.rot90(pent, i)
-    #     flip_pent = np.flip(rot_pent)
-    #     rot_tuple = tuple(rot_pent)
-    #     flip_tuple = tuple(flip_pent)
-    #     if rot_tuple not in duplicate:
-    #         l.append(rot_pent)
-    #         duplicate.add(rot_tuple)
-    #     if flip_tuple not in duplicate:
-    #         l.append(flip_pent)
-    #         duplicate.add(flip_tuple)
-    l = [pent]
-    l.append(np.rot90(pent, 1))
-    l.append(np.rot90(pent, 2))
-    l.append(np.rot90(pent, 3))
-    flip = np.flip(pent)
-    l.append(flip)
-    l.append(np.rot90(flip, 1))
-    l.append(np.rot90(flip, 2))
-    l.append(np.rot90(flip, 3))
+    l = []
+    for i in range(4):
+        rot_pent = np.rot90(pent, i)
+        flip_pent = np.flip(rot_pent)
+
+        rot_exits = False
+        flip_exits = False
+
+        for p in l: # detect duplicates
+            if np.array_equal(p, rot_pent):
+                rot_exits = True
+            if np.array_equal(p, flip_pent):
+                flip_exits = True
+            if rot_exits and flip_exits:
+                break
+
+        if not rot_exits:
+            l.append(rot_pent)
+        if not flip_exits:
+            l.append(flip_pent)
+            
+    # l = [pent]
+    # l.append(np.rot90(pent, 1))
+    # l.append(np.rot90(pent, 2))
+    # l.append(np.rot90(pent, 3))
+    # flip = np.flip(pent)
+    # l.append(flip)
+    # l.append(np.rot90(flip, 1))
+    # l.append(np.rot90(flip, 2))
+    # l.append(np.rot90(flip, 3))
     return l
 
 def check_placement(board, pent, coord):
