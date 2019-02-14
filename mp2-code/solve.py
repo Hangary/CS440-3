@@ -27,6 +27,10 @@ def recursion(board, pents, solution):
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
             coordinate = (y,x)
+            
+            # if coordinate == (3, 5):
+            #     print("3,5")
+
             if board[y][x] == -1:
                 for pent in pents:
                     idx = get_pent_idx(pent)
@@ -43,10 +47,20 @@ def recursion(board, pents, solution):
                                 cor_dict[coordinate] = [ori_pent]
                             else:
                                 cor_dict[coordinate].append(ori_pent)
-    
-    for coor in sorted(cor_dict, key=lambda coor: len(cor_dict[coor]), reverse=False):
+    # print(cor_dict.keys())
+    # print(pent_dict.keys())
+
+    # for k in cor_dict
+    for coor in list(sorted(cor_dict, key=lambda coor: len(cor_dict[coor]), reverse=False)):
         pents_list = cor_dict[coor].copy()
-        for pent in sorted(pents_list, key=lambda pent: len(pent_dict[get_pent_idx(pent)]), reverse=False):
+
+        # print(coor)
+        # print(len(pents_list))
+
+        # if coor == (3,3):
+        #     print('3,3')
+
+        for pent in list(sorted(pents_list, key=lambda pent: len(pent_dict[get_pent_idx(pent)]), reverse=False)):
             p_idx = get_pent_idx(pent)
             new_board = board.copy()
             new_pents = pents.copy()
@@ -60,14 +74,12 @@ def recursion(board, pents, solution):
             if len(new_pents) == 1:
                 return result
             
-            pop_idx = None
             for i in range(len(new_pents)): #remove added pentomino from pents
                 if get_pent_idx(new_pents[i]) == p_idx:
-                    pop_idx = i
+                    new_pents.pop(i)
                     break
-            new_pents.pop(pop_idx)
             
-            return recursion(new_board, new_pents, solution = result)
+            recursion(new_board, new_pents, solution = result)
             
 def add_pentomino(board, pent, coord, check_pent=False, valid_pents=None):
     """
@@ -150,7 +162,7 @@ def generate_ori(pent):
             l.append(rot_pent)
         if not flip_exits:
             l.append(flip_pent)
-            
+
     # l = [pent]
     # l.append(np.rot90(pent, 1))
     # l.append(np.rot90(pent, 2))
