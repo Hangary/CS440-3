@@ -26,10 +26,15 @@ def solve(board, pents):
         board = cur.board
         pents = cur.pents
 
-        if (len(pents) == 0):
-            return board
+        # if (len(pents) == 0):
+        #     return board
+        placmt = dict()
+        for y in range(board.shape[0]):
+            for x in range(board.shape[1]):
+                if board[y][x] == 1:
+                    
+
         
-    return []
 
 def check_placement(board, pent, coord):
     for row in range(pent.shape[0]):
@@ -49,3 +54,4 @@ class state():
     def __hash__(self):
         self.hash = hash((self.board, self.pents))
         return self.hash
+
