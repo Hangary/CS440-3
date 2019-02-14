@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-def solve(board, pents):
+def solve(board, pents, app = None):
     """
     This is the function you will implement. It will take in a numpy array of the board
     as well as a list of n tiles in the form of numpy arrays. The solution returned
@@ -16,6 +16,8 @@ def solve(board, pents):
     """
     solution = recursion(board, pents, [])
     print(solution)
+    # if app is not None:
+    #     app.draw_solution_and_sleep(solution, 1)
     return solution
             
 def recursion(board, pents, solution):
@@ -28,9 +30,9 @@ def recursion(board, pents, solution):
             if board[y][x] == 1:
                 for pent in pents:
                     idx = get_pent_idx(pent)
-                    print(pent)
+                    # print(pent)
                     rot_flip_list = generate_ori(pent)
-                    print(rot_flip_list)
+                    # print(rot_flip_list)
                     for ori_pent in rot_flip_list:
                         if check_placement(board, ori_pent, coordinate):
                             if idx not in pent_dict.keys(): # add coordinate to pent_coor list
@@ -46,10 +48,10 @@ def recursion(board, pents, solution):
     
     for coor in sorted(cor_dict, key=lambda coor: len(cor_dict[coor]), reverse=True):
         pents_list = cor_dict[coor]
-        for pent in sorted(pents_list, key=lambda pent: len(pent_dict[get_pent_idx(pent)], reverse=False)):
+        for pent in sorted(pents_list, key=lambda pent: len(pent_dict[get_pent_idx(pent)]), reverse=False):
             p_idx = get_pent_idx(pent)
             new_board = board.copy()
-            new_pents = pent.copy()
+            new_pents = pents.copy()
             add_pentomino(new_board, pent, coor, check_pent=True, valid_pents=new_pents)
 
             result = solution.copy()
@@ -60,7 +62,7 @@ def recursion(board, pents, solution):
             
             for i in range(len(new_pents)): #remove added pentomino from pents
                 if get_pent_idx(new_pents[i]) == p_idx:
-                    new_pents.pop(pents[i])
+                    new_pents.pop(i)
                     break
             
             return recursion(new_board, new_pents, solution = result)
@@ -78,7 +80,7 @@ def add_pentomino(board, pent, coord, check_pent=False, valid_pents=None):
     for row in range(pent.shape[0]):
         for col in range(pent.shape[1]):
             if pent[row][col] != 0:
-                if board[coord[0]+row][coord[1]+col] != 0: # Overlap
+                if board[coord[0]+row][coord[1]+col] != 1: # Overlap
                     return False
                 else:
                     board[coord[0]+row][coord[1]+col] = pent[row][col]
@@ -148,9 +150,9 @@ def check_placement(board, pent, coord):
     for row in range(pent.shape[0]):
         for col in range(pent.shape[1]):
             if pent[row][col] != 0:
-                # if coord[0]+row >= board.shape[0] or coord[1]+col >= board.shape[1]: # outside board
-                #     return False
-                if board[coord[0]+row][coord[1]+col] != 0: # Overlap
+                if coord[0]+row >= board.shape[0] or coord[1]+col >= board.shape[1]: # outside board
+                    return False
+                if board[coord[0]+row][coord[1]+col] != 1: # Overlap
                     return False
     return True
 
