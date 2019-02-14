@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 
 def solve(board, pents):
     """
@@ -14,27 +15,65 @@ def solve(board, pents):
     -You can assume there will always be a solution.
     """
 
-    initial = state(board, pents)
-    stack = [initial]
-    visited = dict()
-    while stack:
-        cur = stack.pop()
-        if hash(cur) in visited.keys():
-            continue
-        visited[hash(cur)] = 1
+    pent_dict = dict()
+    cor_dict = dict()
 
-        board = cur.board
-        pents = cur.pents
+    for y in range(board.shape[0]):
+        for x in range(board.shape[1]):
+            coordinate = (y,x)
+            if board[y][x] == 1:
+                for pent in pents:
+                    idx = get_pent_idx(pent)
+                    rot_flip_list = generate_ori(pent)
+                    for ori_pent in rot_flip_list:
+                        if check_placement(board, ori_pent, coordinate):
+                            if idx not in pent_dict.keys(): # add coordinate to pent_coor list
+                                pent_dict[idx] = [coordinate]
+                            else:
+                                if coordinate not in pent_dict[idx]:
+                                    pent_dict[idx].append(coordinate)
+                            
+                            if coordinate not in cor_dict.keys(): # add pents to coor_pent list
+                                cor_dict[coordinate] = [ori_pent]
+                            else:
+                                cor_dict[coordinate].append(ori_pent)
 
-        # if (len(pents) == 0):
-        #     return board
-        placmt = dict()
-        for y in range(board.shape[0]):
-            for x in range(board.shape[1]):
-                if board[y][x] == 1:
-                    
 
-        
+def get_pent_idx(pent):
+    """
+    Returns the index of a pentomino.
+    """
+    pidx = 0
+    for i in range(pent.shape[0]):
+        for j in range(pent.shape[1]):
+            if pent[i][j] != 0:
+                pidx = pent[i][j]
+                break
+        if pidx != 0:
+            break
+    if pidx == 0:
+        return -1
+    return pidx - 1
+
+def generate_ori(pent):
+    l = []
+    for i in range(4):
+        rot_pent = np.rot90(pent, i)
+        flip_pent = np.flip(rot_pent)
+        if rot_pent not in l:
+            l.append(rot_pent)
+        if flip_pent not in l:
+            l.append(flip_pent)
+    # l = [pent]
+    # l.append(np.rot90(pent, 1))
+    # l.append(np.rot90(pent, 2))
+    # l.append(np.rot90(pent, 3))
+    # flip = np.flip(pent)
+    # l.append(flip)
+    # l.append(np.rot90(flip, 1))
+    # l.append(np.rot90(flip, 2))
+    # l.append(np.rot90(flip, 3))
+    return l
 
 def check_placement(board, pent, coord):
     for row in range(pent.shape[0]):
