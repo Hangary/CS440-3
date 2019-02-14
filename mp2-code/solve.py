@@ -14,10 +14,11 @@ def solve(board, pents):
     
     -You can assume there will always be a solution.
     """
-
-    return recursion(board, pents)
+    solution = recursion(board, pents, [])
+    print(solution)
+    return solution
             
-def recursion(board, pents, solution = None):
+def recursion(board, pents, solution):
     pent_dict = dict()
     cor_dict = dict()
 
@@ -27,7 +28,9 @@ def recursion(board, pents, solution = None):
             if board[y][x] == 1:
                 for pent in pents:
                     idx = get_pent_idx(pent)
+                    print(pent)
                     rot_flip_list = generate_ori(pent)
+                    print(rot_flip_list)
                     for ori_pent in rot_flip_list:
                         if check_placement(board, ori_pent, coordinate):
                             if idx not in pent_dict.keys(): # add coordinate to pent_coor list
@@ -117,31 +120,36 @@ def get_pent_idx(pent):
     return pidx - 1
 
 def generate_ori(pent):
-    l = []
-    for i in range(4):
-        rot_pent = np.rot90(pent, i)
-        flip_pent = np.flip(rot_pent)
-        if rot_pent not in l:
-            l.append(rot_pent)
-        if flip_pent not in l:
-            l.append(flip_pent)
-    # l = [pent]
-    # l.append(np.rot90(pent, 1))
-    # l.append(np.rot90(pent, 2))
-    # l.append(np.rot90(pent, 3))
-    # flip = np.flip(pent)
-    # l.append(flip)
-    # l.append(np.rot90(flip, 1))
-    # l.append(np.rot90(flip, 2))
-    # l.append(np.rot90(flip, 3))
+    # l = []
+    # duplicate = set()
+    # for i in range(4):
+    #     rot_pent = np.rot90(pent, i)
+    #     flip_pent = np.flip(rot_pent)
+    #     rot_tuple = tuple(rot_pent)
+    #     flip_tuple = tuple(flip_pent)
+    #     if rot_tuple not in duplicate:
+    #         l.append(rot_pent)
+    #         duplicate.add(rot_tuple)
+    #     if flip_tuple not in duplicate:
+    #         l.append(flip_pent)
+    #         duplicate.add(flip_tuple)
+    l = [pent]
+    l.append(np.rot90(pent, 1))
+    l.append(np.rot90(pent, 2))
+    l.append(np.rot90(pent, 3))
+    flip = np.flip(pent)
+    l.append(flip)
+    l.append(np.rot90(flip, 1))
+    l.append(np.rot90(flip, 2))
+    l.append(np.rot90(flip, 3))
     return l
 
 def check_placement(board, pent, coord):
     for row in range(pent.shape[0]):
         for col in range(pent.shape[1]):
             if pent[row][col] != 0:
-                if coord[0]+row >= board.shape[0] or coord[1]+col >= board.shape[1]: # outside board
-                    return False
+                # if coord[0]+row >= board.shape[0] or coord[1]+col >= board.shape[1]: # outside board
+                #     return False
                 if board[coord[0]+row][coord[1]+col] != 0: # Overlap
                     return False
     return True
