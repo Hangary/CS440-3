@@ -15,6 +15,9 @@ def solve(board, pents):
     -You can assume there will always be a solution.
     """
 
+    return recursion(board, pents)
+            
+def recursion(board, pents, solution = None):
     pent_dict = dict()
     cor_dict = dict()
 
@@ -37,7 +40,65 @@ def solve(board, pents):
                                 cor_dict[coordinate] = [ori_pent]
                             else:
                                 cor_dict[coordinate].append(ori_pent)
+    
+    for coor in sorted(cor_dict, key=lambda coor: len(cor_dict[coor]), reverse=True):
+        pents_list = cor_dict[coor]
+        for pent in sorted(pents_list, key=lambda pent: len(pent_dict[get_pent_idx(pent)], reverse=False)):
+            p_idx = get_pent_idx(pent)
+            new_board = board.copy()
+            new_pents = pent.copy()
+            add_pentomino(new_board, pent, coor, check_pent=True, valid_pents=new_pents)
 
+            result = solution.copy()
+            result.append((pent, coor))
+
+            if len(new_pents) == 1:
+                return result
+            
+            for i in range(len(new_pents)): #remove added pentomino from pents
+                if get_pent_idx(new_pents[i]) == p_idx:
+                    new_pents.pop(pents[i])
+                    break
+            
+            return recursion(new_board, new_pents, solution = result)
+            
+def add_pentomino(board, pent, coord, check_pent=False, valid_pents=None):
+    """
+    Adds a pentomino pent to the board. The pentomino will be placed such that
+    coord[0] is the lowest row index of the pent and coord[1] is the lowest 
+    column index. 
+    
+    check_pent will also check if the pentomino is part of the valid pentominos.
+    """
+    if check_pent and not is_pentomino(pent, valid_pents):
+        return False
+    for row in range(pent.shape[0]):
+        for col in range(pent.shape[1]):
+            if pent[row][col] != 0:
+                if board[coord[0]+row][coord[1]+col] != 0: # Overlap
+                    return False
+                else:
+                    board[coord[0]+row][coord[1]+col] = pent[row][col]
+    return True
+
+def is_pentomino(pent, pents):
+    """
+    Checks if a pentomino pent is part of pents
+    """
+    pidx = get_pent_idx(pent)
+    if pidx == -1:
+        return False
+    true_pent = pents[pidx]
+    
+    for flipnum in range(3):
+        p = np.copy(pent)
+        if flipnum > 0:
+            p = np.flip(pent, flipnum-1)
+        for rot_num in range(4):
+            if np.array_equal(true_pent, p):
+                return True
+            p = np.rot90(p)
+    return False
 
 def get_pent_idx(pent):
     """
