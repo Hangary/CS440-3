@@ -231,6 +231,24 @@ def check_placement(board, pent, coord):
 #     return False
 
 def check_board(board, pents):
+
+    has_corner = False
+    for row in range(board.shape[0] - 1):
+        for col in range(board.shape[1] - 1):
+            if row - 1 >= 0 and col - 1 >= 0:
+                if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row-1][col] != -1 and board[row][col-1] != -1:
+                    has_corner = True
+                    break
+            if row - 1 >= 0:
+                if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row-1][col] != -1:
+                    has_corner = True
+                    break
+
+            if col - 1 >= 0:
+                if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row][col-1] != -1:
+                    has_corner = True
+                    break
+
     new_board = board.copy()
     new_pents = pents.copy()
 
@@ -247,7 +265,7 @@ def check_board(board, pents):
                     if can_add:
                         new_pents.pop(i)
                         break
-    return len(new_pents) == 0
+    return not has_corner and (len(new_pents) == 0)
 
 
                             
