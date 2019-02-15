@@ -51,6 +51,11 @@ def recursion(board, pents, solution):
     # print(pent_dict.keys())
 
     # for k in cor_dict
+    # a = list(sorted(cor_dict, key=lambda coor: len(cor_dict[coor]), reverse=True))
+    # for c in a:
+    #     print(c, len(cor_dict[c]))
+    #     print('end')
+
     for coor in list(sorted(cor_dict, key=lambda coor: len(cor_dict[coor]), reverse=False)):
         pents_list = cor_dict[coor].copy()
 
@@ -64,6 +69,7 @@ def recursion(board, pents, solution):
             p_idx = get_pent_idx(pent)
             new_board = board.copy()
             new_pents = pents.copy()
+
             add_pentomino(new_board, pent, coor, check_pent=True, valid_pents=new_pents)
 
             print(new_board)
