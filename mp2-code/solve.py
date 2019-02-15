@@ -24,7 +24,9 @@ def recursion(board, pents, solution):
     pent_dict = dict()
     cor_dict = dict()
 
-    if check_board(board):
+    # print(board)
+
+    if not check_board(board, pents):
         return None
 
     for y in range(board.shape[0]):
@@ -213,17 +215,41 @@ def check_placement(board, pent, coord):
                     return False
     return True
 
-def check_board(board):
-    for row in range(board.shape[0] - 1):
-        for col in range(board.shape[1] - 1):
-            if row - 1 >= 0 and col - 1 >= 0:
-                if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row-1][col] != -1 and board[row][col-1] != -1:
-                    return True
-            if row - 1 >= 0:
-                if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row-1][col] != -1:
-                    return True
+# def check_board(board):
+#     for row in range(board.shape[0] - 1):
+#         for col in range(board.shape[1] - 1):
+#             if row - 1 >= 0 and col - 1 >= 0:
+#                 if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row-1][col] != -1 and board[row][col-1] != -1:
+#                     return True
+#             if row - 1 >= 0:
+#                 if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row-1][col] != -1:
+#                     return True
 
-            if col - 1 >= 0:
-                if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row][col-1] != -1:
-                    return True
-    return False
+#             if col - 1 >= 0:
+#                 if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row][col-1] != -1:
+#                     return True
+#     return False
+
+def check_board(board, pents):
+    new_board = board.copy()
+    new_pents = pents.copy()
+
+    for y in range(new_board.shape[0]):
+        for x in range(new_board.shape[1]):
+            if board[y][x] == -1:   
+                for i in range(len(new_pents)):
+                    ori_pents = generate_ori(new_pents[i])
+                    can_add = False
+                    for pent in ori_pents:
+                        if check_placement(new_board, pent, (y, x)):
+                            can_add = True
+                            break
+                    if can_add:
+                        new_pents.pop(i)
+                        break
+    return len(new_pents) == 0
+
+
+                            
+                
+                   
