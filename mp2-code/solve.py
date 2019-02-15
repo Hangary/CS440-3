@@ -86,6 +86,8 @@ def recursion(board, pents, solution):
                     break
             
             recursion(new_board, new_pents, solution = result)
+    
+    return None
             
 def add_pentomino(board, pent, coord, check_pent=False, valid_pents=None):
     """
