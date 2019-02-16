@@ -54,8 +54,14 @@ def recursion(board, pents, solution, pent_dict, cor_dict):
     # if check_board(board, pents):
     #     return None
 
-    for pidx in sorted(pent_dict.keys(), key=lambda pidx: len(pent_dict[pidx]), reverse=False):
+    for pidx in sorted(pent_dict, key=lambda pidx: len(pent_dict[pidx]), reverse=False):
         for coor in sorted(pent_dict[pidx], key=lambda coor: len(cor_dict[coor]), reverse=True):
+            
+            # for i in pent_dict.keys():
+            #     if pent_dict[i] == []:
+            #         print('stop')
+            if pidx == 0 and coor == (2,4):
+                print('stop')
     # for pidx in pent_seq:
     #     for coor in pent_dict[pidx]:
             for pent in cor_dict[coor][pidx]:
@@ -68,23 +74,28 @@ def recursion(board, pents, solution, pent_dict, cor_dict):
                 else:
                     continue
 
-                # print(new_board)
+                print(new_board)
 
                 new_solution = solution.copy()
                 new_solution.append((pent, coor))
 
-                print(len(new_solution))
-
                 if len(new_solution) == len(pents):
                     return new_solution
-                    
+                
                 new_pent_dict = pent_dict.copy()
                 new_pent_dict.pop(pidx)
 
+                zero_list = []
                 for p in new_pent_dict.keys():
+                    new_pent_dict[p] = pent_dict[p].copy()
                     for coor_added in cor_add_list:
                         if coor_added in new_pent_dict[p]:
                             new_pent_dict[p].remove(coor_added)
+                            if (len(new_pent_dict[p]) == 0):
+                                    zero_list.append(p)
+                
+                for z in zero_list:
+                    new_pent_dict.pop(z)            
                 
                 new_cor_dict = cor_dict.copy()
                 for coor_added in cor_add_list:
