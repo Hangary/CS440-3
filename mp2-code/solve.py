@@ -49,14 +49,15 @@ def recursion(board, pents, solution, pent_dict, cor_dict):
     # if check_board(board, pents):
     #     return None
 
-    for pidx in list(sorted(pent_dict, key=lambda pidx: len(pent_dict[pidx]), reverse=False)):
+    for pidx in list(sorted(pent_dict, key=lambda pidx: len(pent_dict[pidx]), reverse=True)):
         for coor in pent_dict[pidx]:
             for pent in cor_dict[coor]:
                 if get_pent_idx(pent) == pidx:
                 
-                    new_board = board.copy()
+                    new_board = None
 
-                    if check_placement(new_board, pent, coor):
+                    if check_placement(board, pent, coor):
+                        new_board = board.copy()
                         add_pentomino(new_board, pent, coor, check_pent=True, valid_pents=pents)
                     else:
                         continue
@@ -236,10 +237,8 @@ def check_placement(board, pent, coord):
 #     return False
 
 def check_board(board, pents):
-    # has_corner = False
+
     ori_dict = dict()
-    # for pent in pents:
-    #     ori_dict[get_pent_idx(pent)] = generate_ori(pent)
     new_board = board.copy()
     ori_pents_list = []
     for pent in pents:
