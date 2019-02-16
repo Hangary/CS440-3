@@ -41,58 +41,75 @@ def solve(board, pents, app = None):
                                 cor_dict[coordinate][idx] = [ori_pent]
                             else:
                                 cor_dict[coordinate][idx].append(ori_pent)
-    pent_seq = sorted(pent_dict, key=lambda pidx: len(pent_dict[pidx]), reverse=False)
+    # pent_seq = sorted(pent_dict, key=lambda pidx: len(pent_dict[pidx]), reverse=False)
     
-    solution = recursion(board, pents, [], pent_dict, cor_dict, pent_seq)
+    solution = recursion(board, pents, [], pent_dict, cor_dict)
     print(solution)
     # # if app is not None:
     # #     app.draw_solution_and_sleep(solution, 1)
     return solution
             
-def recursion(board, pents, solution, pent_dict, cor_dict, pent_seq):
+def recursion(board, pents, solution, pent_dict, cor_dict):
 
     # if check_board(board, pents):
     #     return None
 
-    # for pidx in list(sorted(pent_dict, key=lambda pidx: len(pent_dict[pidx]), reverse=False)):
-        # for coor in list(sorted(pent_dict[pidx], key=lambda coor: len(cor_dict[coor]), reverse=False)):
-    for pidx in pent_seq:
-        for coor in pent_dict[pidx]:
+    for pidx in sorted(pent_dict.keys(), key=lambda pidx: len(pent_dict[pidx]), reverse=False):
+        for coor in sorted(pent_dict[pidx], key=lambda coor: len(cor_dict[coor]), reverse=True):
+    # for pidx in pent_seq:
+    #     for coor in pent_dict[pidx]:
             for pent in cor_dict[coor][pidx]:
                 
                 new_board = None
-
+                cor_add_list = None
                 if check_placement(board, pent, coor):
                     new_board = board.copy()
-                    add_pentomino(new_board, pent, coor, check_pent=True, valid_pents=pents)
+                    cor_add_list = add_pentomino(new_board, pent, coor)
                 else:
                     continue
 
-                print(new_board)
+                # print(new_board)
 
                 new_solution = solution.copy()
                 new_solution.append((pent, coor))
 
-                if len(pent_seq) == 1:
+                print(len(new_solution))
+
+                if len(new_solution) == len(pents):
                     return new_solution
                     
-                # new_pent_dict = pent_dict.copy()
-                # new_pent_dict.pop(pidx)
+                new_pent_dict = pent_dict.copy()
+                new_pent_dict.pop(pidx)
 
-                new_pents = pents.copy()
-            
-                for i in range(len(new_pents)): #remove added pentomino from pents
-                    if get_pent_idx(new_pents[i]) == pidx:
-                        new_pents.pop(i)
-                        break
+                for p in new_pent_dict.keys():
+                    for coor_added in cor_add_list:
+                        if coor_added in new_pent_dict[p]:
+                            new_pent_dict[p].remove(coor_added)
                 
-                new_pent_seq = pent_seq.copy()
-                new_pent_seq.remove(pidx)
-                    
-                if check_board(new_board, new_pents):
-                    break
+                new_cor_dict = cor_dict.copy()
+                for coor_added in cor_add_list:
+                    if coor_added in new_cor_dict.keys():
+                        new_cor_dict.pop(coor_added)
+
+                for c in new_cor_dict.keys():
+                    new_cor_dict[c] = cor_dict[c].copy()
+                    if pidx in new_cor_dict[c].keys():
+                        new_cor_dict[c].pop(pidx)
+
+                # new_pents = pents.copy()
             
-                result = recursion(new_board, new_pents, new_solution, pent_dict, cor_dict, new_pent_seq)
+                # for i in range(len(new_pents)): #remove added pentomino from pents
+                #     if get_pent_idx(new_pents[i]) == pidx:
+                #         new_pents.pop(i)
+                #         break
+                
+                # new_pent_seq = pent_seq.copy()
+                # new_pent_seq.remove(pidx)
+                    
+                # if check_board(new_board, new_pents):
+                #     continue
+            
+                result = recursion(new_board, pents, new_solution, new_pent_dict, new_cor_dict)
                 if result != None:
                     return result
 
@@ -125,16 +142,8 @@ def recursion(board, pents, solution, pent_dict, cor_dict, pent_seq):
             
     #         recursion(new_board, new_pents, solution = result)
             
-def add_pentomino(board, pent, coord, check_pent=False, valid_pents=None):
-    """
-    Adds a pentomino pent to the board. The pentomino will be placed such that
-    coord[0] is the lowest row index of the pent and coord[1] is the lowest 
-    column index. 
-    
-    check_pent will also check if the pentomino is part of the valid pentominos.
-    """
-    if check_pent and not is_pentomino(pent, valid_pents):
-        return False
+def add_pentomino(board, pent, coord):
+    cor_add_list = []
     for row in range(pent.shape[0]):
         for col in range(pent.shape[1]):
             if pent[row][col] != 0:
@@ -142,7 +151,8 @@ def add_pentomino(board, pent, coord, check_pent=False, valid_pents=None):
                     return False
                 else:
                     board[coord[0]+row][coord[1]+col] = pent[row][col]
-    return True
+                    cor_add_list.append((coord[0]+row, coord[1]+col))
+    return cor_add_list
 
 def is_pentomino(pent, pents):
     """
