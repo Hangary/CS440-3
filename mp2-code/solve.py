@@ -39,22 +39,29 @@ def solve(board, pents, app = None):
                             #     pent_dict[label] = dict()
                             # pent_dict[label][coordinate] = cor_add_list
 
-                            for c in cor_add_list:
-                                if c not in cor_dict.keys(): # add pents to coor_pent list
-                                    cor_dict[c] = dict()
-                                pidx = get_pent_idx(ori_pent)
-                                if pidx not in cor_dict[c].keys():
-                                    cor_dict[c][pidx] = [label]
-                                else:
-                                    if label not in cor_dict[c][pidx]:
-                                        cor_dict[c][pidx].append(label)
-    
-    pents_remain = []
-    for p in pents:
-        pents_remain.append(get_pent_idx(p))
+                            if coordinate not in cor_dict.keys(): # add pents to coor_pent list
+                                cor_dict[coordinate] = dict()
+                            pidx = get_pent_idx(ori_pent)
+                            if pidx not in cor_dict[coordinate].keys():
+                                cor_dict[coordinate][pidx] = [label]
+                            else:
+                                cor_dict[coordinate][pidx].append(label)
 
+                            # for c in cor_add_list:
+                            #     if c not in cor_dict.keys(): # add pents to coor_pent list
+                            #         cor_dict[c] = dict()
+                            #     pidx = get_pent_idx(ori_pent)
+                            #     if pidx not in cor_dict[c].keys():
+                            #         cor_dict[c][pidx] = [label]
+                            #     else:
+                            #         if label not in cor_dict[c][pidx]:
+                            #             cor_dict[c][pidx].append(label)
     
-    solution = recursion(board, pents, [], pent_dict, cor_dict, pents_remain)
+    # pents_remain = []
+    # for p in pents:
+    #     pents_remain.append(get_pent_idx(p))
+    
+    solution = recursion(board, pents, [], pent_dict, cor_dict, [])
     print(solution)
     # # if app is not None:
     # #     app.draw_solution_and_sleep(solution, 1)
@@ -71,12 +78,14 @@ def get_pent(label, pents):
     print(1/0)
     return None
             
-def recursion(board, pents, solution, pent_dict, cor_dict, pents_remain):
+def recursion(board, pents, solution, pent_dict, cor_dict, cor_taken):
     # l = sorted(cor_dict.keys(), key=lambda coor: len(cor_dict[coor]), reverse=False)
     # for a in l:
     #     print(len(cor_dict[a]))
     # print('end')
     print(len(cor_dict))
+    if (len(cor_dict) == 0):
+        print('stop')
 
     for coor in sorted(cor_dict.keys(), key=lambda coor: len(cor_dict[coor]), reverse=False):
         for pidx in cor_dict[coor].keys():
@@ -84,38 +93,41 @@ def recursion(board, pents, solution, pent_dict, cor_dict, pents_remain):
             for label in label_list:
                 # if label[0] not in pents_remain:
                 #     continue
-                if coor not in pent_dict[label].keys():
-                    continue
                 for cor_add_list in pent_dict[label][coor]:
                     is_valid = True
                     for cor_needed in cor_add_list:
-                        if cor_needed not in cor_dict.keys():
+                        if cor_needed in cor_taken:
                             is_valid = False
                             break
                     if not is_valid:
                         continue
 
-                    start_cor = coor
                     pent = get_pent(label, pents)
             
                     new_board = board.copy()
-                    add_pentomino(new_board, pent, start_cor)
+                    add_pentomino(new_board, pent, coor)
                     print(new_board)
 
                     new_solution = solution.copy()
-                    new_solution.append((pent, start_cor))
+                    new_solution.append((pent, coor))
 
-                    new_pents_remain = pents_remain.copy()
-                    new_pents_remain.remove(label[0])
+                    # new_pents_remain = pents_remain.copy()
+                    # new_pents_remain.remove(label[0])
 
                     if len(new_solution) == len(pents):
                         return new_solution
             
                     new_cor_dict = cor_dict.copy()
 
+                    new_cor_taken = cor_taken.copy()
+                    new_cor_taken += cor_add_list
+
                     for c in cor_add_list:
                         if c in new_cor_dict.keys():
                             new_cor_dict.pop(c)
+                    
+                    if len(new_cor_dict) == 0:
+                        continue
 
                     empty_cor_exists = False
                     for key in new_cor_dict.keys():
@@ -127,7 +139,7 @@ def recursion(board, pents, solution, pent_dict, cor_dict, pents_remain):
                                 break
                     result = None
                     if not empty_cor_exists:
-                        result = recursion(new_board, pents, new_solution, pent_dict, new_cor_dict, new_pents_remain)
+                        result = recursion(new_board, pents, new_solution, pent_dict, new_cor_dict, new_cor_taken)
                     if result != None:
                         return result
 
