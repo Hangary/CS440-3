@@ -111,12 +111,10 @@ def add_pent(board, pidx, cor_add_list):
             
 def recursion(board, pents, solution, pent_dict, coor_remain, pents_remain):
     cor_dict = dict()
+    for coordinate in coor_remain:
+        cor_dict[coordinate] = dict()
 
     for coordinate in coor_remain:
-        if coordinate == (1,1):
-            print(1)
-        if coordinate not in cor_dict.keys():
-            cor_dict[coordinate] = dict()
         for pidx in pents_remain:
             if coordinate not in pent_dict[pidx].keys():
                 continue
