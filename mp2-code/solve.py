@@ -18,10 +18,13 @@ def solve(board, pents, app = None):
     pent_dict = dict()
     # cor_dict = dict()
 
+    coor_remain = []
+
     board = np.negative(board)
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
             coordinate = (y,x)
+            coor_remain.append(coordinate)
             if board[y][x] == -1:
                 for pent in pents:
                     idx = get_pent_idx(pent)
@@ -30,9 +33,11 @@ def solve(board, pents, app = None):
                         cor_add_list =  check_placement(board, ori_pent, coordinate)
                         if cor_add_list != []:
                             if idx not in pent_dict.keys():
-                                pent_dict[idx] = [(ori_pent, cor_add_list)]
+                                pent_dict[idx] = dict()
+                            if coordinate not in pent_dict[idx].keys():
+                                pent_dict[idx][coordinate] = [(ori_pent, cor_add_list)]
                             else:
-                                pent_dict[idx].append((ori_pent, cor_add_list))
+                                pent_dict[idx][coordinate].append((ori_pent, cor_add_list))
                             # if label not in pent_dict.keys(): # add coordinate to pent_coor list
                             #     pent_dict[label] = dict()
                             #     pent_dict[label][coordinate] = [cor_add_list]
@@ -66,7 +71,7 @@ def solve(board, pents, app = None):
     for p in pents:
         pents_remain.append(get_pent_idx(p))
     
-    solution = recursion(board, pents, [], pent_dict, [], pents_remain)
+    solution = recursion(board, pents, [], pent_dict, coor_remain, pents_remain)
     print(solution)
     # # if app is not None:
     # #     app.draw_solution_and_sleep(solution, 1)
@@ -104,50 +109,60 @@ def add_pent(board, pidx, cor_add_list):
 
         board[row][col] = (pidx + 1)
             
-def recursion(board, pents, solution, pent_dict, cor_taken, pents_remain):
+def recursion(board, pents, solution, pent_dict, coor_remain, pents_remain):
     cor_dict = dict()
-    # for row in range(board.shape[0]):
-    #     for col in range(board.shape[1]):
-    #         coordinate = (row, col)
-    #         for pidx in pents_remain:
-    #             if coordinate not in cor_dict.keys():
-    #                 cor_dict[coordinate] = dict()
-    #             for pent, cor_add_list in pent_dict[pidx]:
-    #                 valid = True
-    #                 for c in cor_add_list:
-    #                     if c in cor_taken:
-    #                         valid = False
-    #                         break
-    #                 if valid:
-                        
-    #                     if pidx not in cor_dict[coordinate].keys():
-    #                         cor_dict[coordinate][pidx] = [(pent, cor_add_list)]
-    #                     else:
-    #                         cor_dict[coordinate][pidx].append((pent, cor_add_list))
-    for row in range(board.shape[0]):
-        for col in range(board.shape[1]):
-            coordinate = (row, col)
-            if coordinate not in cor_dict.keys() and coordinate not in cor_taken:
-                cor_dict[coordinate] = dict()
-            for pidx in pents_remain:
-                ori_pents_list = generate_ori(pents[pidx])
-                for ori_pent, label in ori_pents_list:
-                    cor_add_list = check_placement(board, ori_pent, coordinate)
-                    invalid = False
-                    for c in cor_add_list:
-                        if c in cor_taken:
-                            invalid = True
-                            break
-                    if invalid:
-                        continue
-                            
+
+    for coordinate in coor_remain:
+        if coordinate == (1,1):
+            print(1)
+        if coordinate not in cor_dict.keys():
+            cor_dict[coordinate] = dict()
+        for pidx in pents_remain:
+            if coordinate not in pent_dict[pidx].keys():
+                continue
+            for pent, cor_add_list in pent_dict[pidx][coordinate]:
+                valid = True
+                for c in cor_add_list:
+                    if c not in coor_remain:
+                        valid = False
+                        break
+                if valid:
                     for c in cor_add_list:
                         if c not in cor_dict.keys():
                             cor_dict[c] = dict()
                         if pidx not in cor_dict[c].keys():
-                            cor_dict[c][pidx] = [(ori_pent, cor_add_list)]
+                            cor_dict[c][pidx] = [(pent, cor_add_list)]
                         else:
-                            cor_dict[c][pidx].append((ori_pent, cor_add_list))
+                            cor_dict[c][pidx].append((pent, cor_add_list))
+
+                        # if pidx not in cor_dict[coordinate].keys():
+                        #     cor_dict[coordinate][pidx] = [(pent, cor_add_list)]
+                        # else:
+                        #     cor_dict[coordinate][pidx].append((pent, cor_add_list))
+    # for row in range(board.shape[0]):
+    #     for col in range(board.shape[1]):
+    #         coordinate = (row, col)
+    #         if coordinate not in cor_dict.keys() and coordinate not in cor_taken:
+    #             cor_dict[coordinate] = dict()
+    #         for pidx in pents_remain:
+    #             ori_pents_list = generate_ori(pents[pidx])
+    #             for ori_pent, label in ori_pents_list:
+    #                 cor_add_list = check_placement(board, ori_pent, coordinate)
+    #                 invalid = False
+    #                 for c in cor_add_list:
+    #                     if c in cor_taken:
+    #                         invalid = True
+    #                         break
+                    # if invalid:
+                    #     continue
+                            
+                    # for c in cor_add_list:
+                    #     if c not in cor_dict.keys():
+                    #         cor_dict[c] = dict()
+                    #     if pidx not in cor_dict[c].keys():
+                    #         cor_dict[c][pidx] = [(ori_pent, cor_add_list)]
+                    #     else:
+                    #         cor_dict[c][pidx].append((ori_pent, cor_add_list))
 
     while len(cor_dict) != 0:
         least_coor = find_least(cor_dict)
@@ -158,7 +173,10 @@ def recursion(board, pents, solution, pent_dict, cor_taken, pents_remain):
             for ori_pent, cor_add_list in cor_dict[least_coor][pidx]:
                 solution.append((ori_pent, cor_add_list[0]))
                 pents_remain.remove(pidx)
-                cor_taken += cor_add_list
+                
+                for c in cor_add_list:
+                    coor_remain.remove(c)
+                
                 add_pent(board, pidx, cor_add_list)
 
                 print(board)
@@ -166,15 +184,14 @@ def recursion(board, pents, solution, pent_dict, cor_taken, pents_remain):
                 if len(solution) == len(pents):
                     return solution
 
-                result = recursion(board, pents, solution, pent_dict, cor_taken, pents_remain)
+                result = recursion(board, pents, solution, pent_dict, coor_remain, pents_remain)
                 if result != None:
                     return result
                 else:
                     solution.pop()
                     pents_remain.append(pidx)
 
-                    for c in cor_add_list:
-                        cor_taken.remove(c)
+                    coor_remain += cor_add_list
 
                     board[board == (pidx+1)] = -1
         cor_dict.pop(least_coor)
