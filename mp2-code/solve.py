@@ -45,6 +45,7 @@ def solve(board, pents, app = None):
     solution = recursion(board, pents, [], pent_dict, coor_remain, pents_remain)
     print(solution)
     return solution
+    
 def get_pent(label, pents):
     ori_pent = None
     for pent in pents:
@@ -85,12 +86,11 @@ def recursion(board, pents, solution, pent_dict, coor_remain, pents_remain):
         cor_dict[coordinate] = []
         cor_pidx_dict[coordinate] = set()
 
-
-    for coordinate in coor_remain:
+    for coor in coor_remain:
         for pidx in pents_remain:
-            if coordinate not in pent_dict[pidx].keys():
+            if coor not in pent_dict[pidx].keys():
                 continue
-            for pent, cor_add_list in pent_dict[pidx][coordinate]:
+            for pent, cor_add_list in pent_dict[pidx][coor]:
                 valid = True
                 for c in cor_add_list:
                     if c not in coor_remain:
@@ -98,51 +98,39 @@ def recursion(board, pents, solution, pent_dict, coor_remain, pents_remain):
                         break
                 if valid:
                     for c in cor_add_list:
-                        cor_dict[c].append((pent, cor_add_list))
+                        cor_dict[c].append((coor, pent, cor_add_list))
                         cor_pidx_dict[c].add(pidx)
-                        # if c not in cor_dict.keys():
-                        #     cor_dict[c] = dict()
-                        # if pidx not in cor_dict[c].keys():
-                        #     cor_dict[c][pidx] = [(pent, cor_add_list)]
-                        # else:
-                        #     cor_dict[c][pidx].append((pent, cor_add_list))
 
-    while len(cor_dict) != 0:
-        # least_coor = find_least(cor_dict)
-        # if least_coor == None:
-        #     return None
-        least_coor = min(cor_pidx_dict.keys(), key=lambda least_coor: len(cor_pidx_dict[least_coor]))
-        if len(cor_pidx_dict[least_coor]) == 0:
-            return None
-
-        for ori_pent, cor_add_list in cor_dict[least_coor]:
-            pidx = get_pent_idx(ori_pent)
-            solution.append((ori_pent, cor_add_list[0]))
-            pents_remain.remove(pidx)
-                
-            for c in cor_add_list:
-                coor_remain.remove(c)
-                
-            add_pent(board, pidx, cor_add_list)
-
-            print(board)
-
-            if len(solution) == len(pents):
-                return solution
-
-            result = recursion(board, pents, solution, pent_dict, coor_remain, pents_remain)
-            if result != None:
-                return result
-            else:
-                solution.pop()
-                pents_remain.append(pidx)
-
-                coor_remain += cor_add_list
-
-                board[board == (pidx+1)] = -1
-        # cor_dict.pop(least_coor)
-        # cor_pidx_dict.pop(least_coor)
+    least_coor = min(cor_pidx_dict.keys(), key=lambda least_coor: len(cor_pidx_dict[least_coor]))
+    if len(cor_pidx_dict[least_coor]) == 0:
         return None
+
+    for assignment_cor, ori_pent, cor_add_list in cor_dict[least_coor]:
+        pidx = get_pent_idx(ori_pent)
+        solution.append((ori_pent, assignment_cor))
+        pents_remain.remove(pidx)
+                
+        for c in cor_add_list:
+            coor_remain.remove(c)
+                
+        add_pent(board, pidx, cor_add_list)
+
+        print(board)
+
+        if len(solution) == len(pents):
+            return solution
+
+        result = recursion(board, pents, solution, pent_dict, coor_remain, pents_remain)
+        if result != None:
+            return result
+        else:
+            solution.pop()
+            pents_remain.append(pidx)
+
+            coor_remain += cor_add_list
+
+            board[board == (pidx+1)] = -1
+    return None
             
 def add_pentomino(board, pent, coord):
     cor_add_list = []
