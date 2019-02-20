@@ -40,6 +40,13 @@ class ultimateTicTacToe:
         self.expandedNodes=0
         self.currPlayer=True
 
+        self.twoInARowMax = [['X','X','_'],['X','_','X'],['_','X','X']]
+        self.twoInARowMin = [['O','O','_'],['O','_','O'],['_','O','O']]
+        self.twoInARowBlockMin = [['O','O','X'],['O','X','O'],['X','O','O']]
+        self.twoInARowBlockMax = [['X','X','O'],['X','O','X'],['O','X','X']]
+        self.winMax = ['X','X','X']
+        self.winMin = ['O','O','O']
+
     def printGameBoard(self):
         """
         This function prints the current game board.
@@ -48,6 +55,114 @@ class ultimateTicTacToe:
         print('\n'.join([' '.join([str(cell) for cell in row]) for row in self.board[3:6]])+'\n')
         print('\n'.join([' '.join([str(cell) for cell in row]) for row in self.board[6:9]])+'\n')
 
+    def max_scoreOneBoard(self, row, column, rule2):
+        """
+        row, column: top left corner
+        First rule: If the offensive agent wins (form three-in-a-row), set the utility score to be 10000.
+        Second rule: For each local board, count the number of two-in-a-row without the third spot taken by
+        the opposing player (unblocked two-in-a-row). For each unblocked two-in-a-row, increment the utility
+        score by 500. For each local board, count the number of places in which you have prevented the opponent
+        player forming two-in-a-row (two-in-a-row of opponent player but with the third spot taken by offensive agent).
+        For each prevention, increment the utility score by 100.
+        Third rule: For each corner taken by the offensive agent, increment the utility score by 30.
+        """
+        count_R2 = 0
+        count_R3 = 0
+        board = self.board
+        for i in range(3):
+            list_temp1 = [board[i+row][0+column], board[i+row][1+column], board[i+row][2+column]]
+            list_temp2 = [board[0+row][i+column], board[1+row][i+column], board[2+row][i+column]]
+            if list_temp1 == self.winMax or list_temp2 == self.winMax:
+                return 10000, 0
+            if list_temp1 in self.twoInARowMax:
+                count_R2 += 500
+            elif list_temp1 in self.twoInARowBlockMin:
+                count_R2 += 100
+            if list_temp2 in self.twoInARowMax:
+                count_R2 += 500
+            elif list_temp2 in self.twoInARowBlockMin:
+                count_R2 += 100
+        list_temp1 = [board[row][column], board[row+1][column+1], board[row+2][column+2]]
+        list_temp2 = [board[row][column+2], board[row+1][column+1], board[row+2][column]]
+        if list_temp1 == self.winMax or list_temp2 == self.winMax:
+            return 10000, 0
+        if list_temp1 in self.twoInARowMax:
+            count_R2 += 500
+        elif list_temp1 in self.twoInARowBlockMin:
+            count_R2 += 100
+        if list_temp2 in self.twoInARowMax:
+            count_R2 += 500
+        elif list_temp2 in self.twoInARowBlockMin:
+            count_R2 += 100
+        if count_R2 > 0:
+            rule2 = 1
+        if rule2 == 1:
+            return count_R2, 1
+        else:
+            if board[row][column] == self.maxPlayer:
+                count_R3 += 30
+            if board[row+2][column] == self.maxPlayer:
+                count_R3 += 30
+            if board[row][column+2] == self.maxPlayer:
+                count_R3 += 30
+            if board[row+2][column+2] == self.maxPlayer:
+                count_R3 += 30
+            return count_R3, 0
+        return 0, 0
+
+    def min_scoreOneBoard(self, row, column, rule2):
+        """
+        row, column: top left corner
+        First rule: If the defensive agent wins (forms three-in-a-row), set the utility score to be -10000.
+        Second rule: For each local board, count the number of two-in-a-row without the third spot taken by
+        the opponent player. For each two-in-a-row, decrement the utility score by 100. For each local board,
+        count the number of prevention of opponent player forming two-in-a-row (two-in-a-row of opponent player
+        but with the third spot taken by defensive agent). For each prevention, decrement the utility score by 500.
+        Third rule: For each corner taken by defensive agent, decrement the utility score by 30.
+        """
+        count_R2 = 0
+        count_R3 = 0
+        board = self.board
+        for i in range(3):
+            list_temp1 = [board[i+row][0+column], board[i+row][1+column], board[i+row][2+column]]
+            list_temp2 = [board[0+row][i+column], board[1+row][i+column], board[2+row][i+column]]
+            if list_temp1 == self.winMin or list_temp2 == self.winMin:
+                return -10000, 0
+            if list_temp1 in self.twoInARowMin:
+                count_R2 -= 100
+            elif list_temp1 in self.twoInARowBlockMax:
+                count_R2 -= 500
+            if list_temp2 in self.twoInARowMin:
+                count_R2 -= 100
+            elif list_temp2 in self.twoInARowBlockMax:
+                count_R2 -= 500
+        list_temp1 = [board[row][column], board[row+1][column+1], board[row+2][column+2]]
+        list_temp2 = [board[row][column+2], board[row+1][column+1], board[row+2][column]]
+        if list_temp1 == self.winMin or list_temp2 == self.winMin:
+            return -10000, 0
+        if list_temp1 in self.twoInARowMin:
+            count_R2 -= 100
+        elif list_temp1 in self.twoInARowBlockMax:
+            count_R2 -= 500
+        if list_temp2 in self.twoInARowMin:
+            count_R2 -= 100
+        elif list_temp2 in self.twoInARowBlockMax:
+            count_R2 -= 500
+        if count_R2 < 0:
+            rule2 = 1
+        if rule2 == 1:
+            return count_R2, 1
+        else:
+            if board[row][column] == self.minPlayer:
+                count_R3 -= 30
+            if board[row+2][column] == self.minPlayer:
+                count_R3 -= 30
+            if board[row][column+2] == self.minPlayer:
+                count_R3 -= 30
+            if board[row+2][column+2] == self.minPlayer:
+                count_R3 -= 30
+            return count_R3, 0
+        return 0, 0
 
     def evaluatePredifined(self, isMax):
         """
@@ -59,7 +174,22 @@ class ultimateTicTacToe:
         score(float): estimated utility score for maxPlayer or minPlayer
         """
         #YOUR CODE HERE
-        score=0
+        score = 0
+        r = 0
+        if isMax:
+            for x in self.globalIdx:
+                row, column = x
+                s, r = self.max_scoreOneBoard(row, column, r)
+                score += s
+                if score >= 10000:
+                    return 10000
+        else:
+            for x in self.globalIdx:
+                row, column = x
+                s, r = self.min_scoreOneBoard(row, column, r)
+                score += s
+                if score <= -10000:
+                    return -10000
         return score
 
 
@@ -84,8 +214,11 @@ class ultimateTicTacToe:
                         on the board.
         """
         #YOUR CODE HERE
-        movesLeft=True
-        return movesLeft
+        for i in range(9):
+            for j in range(9):
+                if self.board[i][j] == '_':
+                    return True
+        return False
 
     def checkWinner(self):
         #Return termimnal node status for maximizer player 1-win,0-tie,-1-lose
@@ -97,7 +230,12 @@ class ultimateTicTacToe:
                      Return -1 if miniPlayer is the winner.
         """
         #YOUR CODE HERE
-        winner=0
+        score = self.evaluatePredifined(True)
+        if score == 10000:
+            return 1
+        score = self.evaluatePredifined(False)
+        if score == -10000:
+            return -1
         return 0
 
     def alphabeta(self,depth,currBoardIdx,alpha,beta,isMax):
@@ -114,7 +252,53 @@ class ultimateTicTacToe:
         bestValue(float):the bestValue that current player may have
         """
         #YOUR CODE HERE
-        bestValue=0.0
+        self.expandedNodes += 1
+        if isMax:
+            bestValue = -100000
+        else:
+            bestValue = 100000
+        if depth == 0:
+            return self.evaluatePredifined(isMax)
+        row, column = self.globalIdx[currBoardIdx]
+        iffull = 1
+        for i in range(3):
+            for j in range(3):
+                if self.board[i+row][j+column] == '_':
+                    iffull = 0
+                    if isMax:
+                        self.board[i+row][j+column] = self.maxPlayer
+                        bestValue = max(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
+                        self.board[i+row][j+column] = '_'
+                        if bestValue > beta:
+                            return bestValue
+                    else:
+                        self.board[i+row][j+column] = self.minPlayer
+                        bestValue = min(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
+                        self.board[i+row][j+column] = '_'
+                        if bestValue < alpha:
+                            return bestValue
+                    alpha = max(alpha, bestValue)
+                    beta = min(beta, bestValue)
+        if iffull == 1:
+            for x in self.globalIdx:
+                row, column = x
+                for i in range(3):
+                    for j in range(3):
+                        if self.board[i][j] == '_':
+                            if isMax:
+                                self.board[i+row][j+column] = self.maxPlayer
+                                bestValue = max(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
+                                self.board[i+row][j+column] = '_'
+                                if bestValue > beta:
+                                    return bestValue
+                            else:
+                                self.board[i+row][j+column] = self.minPlayer
+                                bestValue = min(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
+                                self.board[i+row][j+column] = '_'
+                                if bestValue < alpha:
+                                    return bestValue
+                            alpha = max(alpha, score)
+                            beta = min(beta, score)
         return bestValue
 
     def minimax(self, depth, currBoardIdx, isMax):
@@ -129,9 +313,48 @@ class ultimateTicTacToe:
                      True for maxPlayer, False for minPlayer
         output:
         bestValue(float):the bestValue that current player may have
+
+        Minimax(node) =
+         Utility(node) if node is terminal
+         max action Minimax(Succ(node, action)) if player = MAX
+         min action Minimax(Succ(node, action)) if player = MIN
         """
         #YOUR CODE HERE
-        bestValue=0.0
+        self.expandedNodes += 1
+        if isMax:
+            bestValue = -100000
+        else:
+            bestValue = 100000
+        if depth == 0:
+            return self.evaluatePredifined(isMax)
+        row, column = self.globalIdx[currBoardIdx]
+        iffull = 1
+        for i in range(3):
+            for j in range(3):
+                if self.board[i+row][j+column] == '_':
+                    iffull = 0
+                    if isMax:
+                        self.board[i+row][j+column] = self.maxPlayer
+                        bestValue = max(self.minimax(depth-1, i*3+j, not isMax), bestValue)
+                        self.board[i+row][j+column] = '_'
+                    else:
+                        self.board[i+row][j+column] = self.minPlayer
+                        bestValue = min(self.minimax(depth-1, i*3+j, not isMax), bestValue)
+                        self.board[i+row][j+column] = '_'
+        if iffull == 1:
+            for x in self.globalIdx:
+                row, column = x
+                for i in range(3):
+                    for j in range(3):
+                        if self.board[i][j] == '_':
+                            if isMax:
+                                self.board[i+row][j+column] = self.maxPlayer
+                                bestValue = max(self.minimax(depth-1, i*3+j, not isMax), bestValue)
+                                self.board[i+row][j+column] = '_'
+                            else:
+                                self.board[i+row][j+column] = self.minPlayer
+                                bestValue = min(self.minimax(depth-1, i*3+j, not isMax), bestValue)
+                                self.board[i+row][j+column] = '_'
         return bestValue
 
     def playGamePredifinedAgent(self,maxFirst,isMinimaxOffensive,isMinimaxDefensive):
@@ -155,8 +378,72 @@ class ultimateTicTacToe:
         bestMove=[]
         bestValue=[]
         gameBoards=[]
+        expandedNodes =[]
         winner=0
+        nextisMax = maxFirst
+        row, column = self.globalIdx[self.startBoardIdx]
+        count = 0
+        while count < 81:
+            alpha = -100000
+            beta = 100000
+            count += 1
+            if nextisMax:
+                cur_score = -100000
+            else:
+                cur_score = 100000
+            cur_step = (-1, -1)
+            board_index = -1
+            self.expandedNodes = 0
+            for i in range(3):
+                for j in range(3):
+                    if self.board[i+row][j+column] == '_':
+                        self.expandedNodes += 1
+                        if nextisMax:
+                            self.board[i+row][j+column] = self.maxPlayer
+                            if isMinimaxOffensive:
+                                score = self.minimax(1, i*3+j, not nextisMax)
+                            else:
+                                score = self.alphabeta(1, i*3+j, alpha, beta, not nextisMax)
+                        else:
+                            self.board[i+row][j+column] = self.minPlayer
+                            if isMinimaxDefensive:
+                                score = self.minimax(1, i*3+j, not nextisMax)
+                            else:
+                                score = self.alphabeta(1, i*3+j, alpha, beta, not nextisMax)
+                        self.board[i+row][j+column] = '_'
+                        if nextisMax:
+                            if score > cur_score:
+                                cur_score = score
+                                cur_step = ((i+row), (j+column))
+                                board_index = i*3+j
+                        else:
+                            if score < cur_score:
+                                cur_score = score
+                                cur_step = ((i+row), (j+column))
+                                board_index = i*3+j
+                        alpha = max(alpha, cur_score)
+                        beta = min(beta, cur_score)
+            bestMove.append(cur_step)
+            bestValue.append(cur_score)
+            expandedNodes.append(self.expandedNodes)
+            row, column = cur_step
+            if nextisMax:
+                self.board[row][column] = self.maxPlayer
+            else:
+                self.board[row][column] = self.minPlayer
+            gameBoards.append(self.board.copy())
+            row, column = self.globalIdx[board_index]
+            winner = self.checkWinner()
+            self.printGameBoard()
+            print(nextisMax)
+            print(cur_score)
+            nextisMax = not nextisMax
+            if winner != 0:
+                print(winner)
+                return gameBoards, bestMove, expandedNodes, bestValue, winner
         return gameBoards, bestMove, expandedNodes, bestValue, winner
+
+
 
     def playGameYourAgent(self):
         """
@@ -190,7 +477,9 @@ class ultimateTicTacToe:
 
 if __name__=="__main__":
     uttt=ultimateTicTacToe()
-    gameBoards, bestMove, bestValue, winner=uttt.playGameReflexAgent()
+    #gameBoards, bestMove, bestValue, winner=uttt.playGameReflexAgent()
+    gameBoards, bestMove, expandedNodes, bestValue, winner=uttt.playGamePredifinedAgent(1,0,0)
+    print(expandedNodes)
     if winner == 1:
         print("The winner is maxPlayer!!!")
     elif winner == -1:
