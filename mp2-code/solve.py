@@ -90,9 +90,9 @@ def recursion(board, pents, solution, pent_dict, cor_dict, coor_remain, pents_re
             for c in cor_add_list:
                 coor_remain.remove(c)
                 
-            add_pent(board, pidx, cor_add_list)
+            # add_pent(board, pidx, cor_add_list)
 
-            print(board)
+            # print(board)
 
             temp_set_list = []
             for c in cor_add_list:
@@ -116,7 +116,7 @@ def recursion(board, pents, solution, pent_dict, cor_dict, coor_remain, pents_re
                 solution.pop()
                 pents_remain.append(pidx)
                 coor_remain.update(cor_add_list)
-                board[board == (pidx+1)] = -1
+                # board[board == (pidx+1)] = -1
 
                 for c, idx in temp_pop_list:
                     cor_dict[c].add(idx)
