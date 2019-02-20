@@ -28,7 +28,7 @@ def solve(board, pents, app = None):
                 for pent in pents:
                     idx = get_pent_idx(pent)
                     rot_flip_list = generate_ori(pent)
-                    for ori_pent, label in rot_flip_list:
+                    for ori_pent in rot_flip_list:
                         cor_add_list =  check_placement(board, ori_pent, coordinate)
                         if cor_add_list != []:
                             if idx not in pent_dict.keys():
@@ -45,15 +45,6 @@ def solve(board, pents, app = None):
     solution = recursion(board, pents, [], pent_dict, coor_remain, pents_remain)
     print(solution)
     return solution
-
-def add_pent(board, pidx, cor_add_list):
-    for c in cor_add_list:
-        row = c[0]
-        col = c[1]
-        if board[row][col] != -1:
-            print ("                                                       error")
-
-        board[row][col] = (pidx + 1)
             
 def recursion(board, pents, solution, pent_dict, coor_remain, pents_remain):
     cor_dict = dict()
@@ -108,6 +99,15 @@ def recursion(board, pents, solution, pent_dict, coor_remain, pents_remain):
             board[board == (pidx+1)] = -1
     return None
 
+def add_pent(board, pidx, cor_add_list):
+    for c in cor_add_list:
+        row = c[0]
+        col = c[1]
+        if board[row][col] != -1:
+            print ("                                                       error")
+
+        board[row][col] = (pidx + 1)
+
 def check_placement(board, pent, coord):
     cor_add_list = []
     for row in range(pent.shape[0]):
@@ -150,7 +150,7 @@ def generate_ori(pent): # idx, rot:(0 - 3), flip:(0: non_flip; 1:fliped)
                 break
         if not rot_exits:
             pent_exits.append(rot_pent)
-            result.append((rot_pent, (idx, i, 0)))
+            result.append(rot_pent)
 
     
     for i in range(4):
@@ -166,6 +166,6 @@ def generate_ori(pent): # idx, rot:(0 - 3), flip:(0: non_flip; 1:fliped)
 
         if not flip_exits:
             pent_exits.append(flip_pent)
-            result.append((flip_pent, (idx, i, 1)))
+            result.append(flip_pent)
 
     return result
