@@ -45,30 +45,6 @@ def solve(board, pents, app = None):
     solution = recursion(board, pents, [], pent_dict, coor_remain, pents_remain)
     print(solution)
     return solution
-    
-def get_pent(label, pents):
-    ori_pent = None
-    for pent in pents:
-        idx = get_pent_idx(pent)
-        if idx == label[0]:
-            ori_pent = np.rot90(pent, label[1])
-            if label[2] == 1:
-                ori_pent = np.flip(ori_pent)
-            return ori_pent
-    print(1/0)
-    return None
-
-def find_least(cor_dict):
-    smallest = None
-    for coor in cor_dict.keys():
-        if len(cor_dict[coor]) == 0:
-            return None
-        if smallest == None:
-            smallest = coor
-            continue
-        if len(cor_dict[coor]) < len(cor_dict[smallest]):
-            smallest = coor
-    return smallest
 
 def add_pent(board, pidx, cor_add_list):
     for c in cor_add_list:
@@ -131,18 +107,6 @@ def recursion(board, pents, solution, pent_dict, coor_remain, pents_remain):
 
             board[board == (pidx+1)] = -1
     return None
-            
-def add_pentomino(board, pent, coord):
-    cor_add_list = []
-    for row in range(pent.shape[0]):
-        for col in range(pent.shape[1]):
-            if pent[row][col] != 0:
-                if board[coord[0]+row][coord[1]+col] != -1: # Overlap
-                    return False
-                else:
-                    board[coord[0]+row][coord[1]+col] = pent[row][col]
-                    cor_add_list.append((coord[0]+row, coord[1]+col))
-    return cor_add_list
 
 def check_placement(board, pent, coord):
     cor_add_list = []
@@ -155,31 +119,6 @@ def check_placement(board, pent, coord):
                     return []
                 cor_add_list.append((coord[0]+row, coord[1]+col))
     return cor_add_list
-
-def is_pentomino(pent, pents):
-    """
-    Checks if a pentomino pent is part of pents
-    """
-    pidx = get_pent_idx(pent)
-    if pidx == -1:
-        return False
-
-    idx = None
-    for i in range(len(pents)):
-        if get_pent_idx(pents[i]) == pidx:
-            idx = i
-            break
-    true_pent = pents[idx]
-    
-    for flipnum in range(3):
-        p = np.copy(pent)
-        if flipnum > 0:
-            p = np.flip(pent, flipnum-1)
-        for rot_num in range(4):
-            if np.array_equal(true_pent, p):
-                return True
-            p = np.rot90(p)
-    return False
 
 def get_pent_idx(pent):
     """
@@ -230,59 +169,3 @@ def generate_ori(pent): # idx, rot:(0 - 3), flip:(0: non_flip; 1:fliped)
             result.append((flip_pent, (idx, i, 1)))
 
     return result
-
-def check_board(board, pents):
-
-    ori_dict = dict()
-    new_board = board.copy()
-    ori_pents_list = []
-    for pent in pents:
-         ori_pents_list += generate_ori(pent)
-         ori_dict[get_pent_idx(pent)] = generate_ori(pent)
-
-    for row in range(board.shape[0]):
-        for col in range(board.shape[1]):
-
-            pop_list = []
-            for pidx in ori_dict.keys():
-                for pent in ori_dict[pidx]:
-                    if check_placement(board, pent, (row, col)):
-                        pop_list.append(pidx)
-                        break
-            for idx in pop_list:
-                ori_dict.pop(idx)
-
-            if row == board.shape[0] - 1 and col == board.shape[1] - 1:
-                if board[row][col] == -1 and board[row - 1][col] != -1 and board[row][col - 1] !=-1:
-                    return True 
-                else: continue
-
-            if row == board.shape[0] - 1:
-                if board[row][col] == -1 and board[row][col - 1] != -1 and board[row][col+1] !=-1 and board[row-1][col] != -1:
-                    return True
-                else: continue
-
-            if col == board.shape[1] - 1:
-                if board[row + 1][col] == -1 and board[row - 1][col] != -1 and board[row][col-1] !=-1:
-                    return True
-                else: continue
-
-            if row == 0 and col == 0:
-                if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1:
-                    return True
-                else: continue
-
-            if row == 0:
-                if board[row][col] == -1 and board[row+1][col] != -1 and board[row][col+1] !=-1 and board[row][col-1] != -1:
-                    return True
-                else: continue
-
-            if col == 0:
-                if board[row][col] == -1 and board[row+1][col] != -1 and board[row-1][col] !=-1 and board[row][col+1] != -1:
-                    return True
-                else: continue
-            
-            if board[row][col] == -1 and board[row+1][col] != -1 and board[row-1][col] !=-1 and board[row][col+1] != -1 and board[row][col-1] != -1:
-                    return True
-
-    return not len(ori_dict) == 0
