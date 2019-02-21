@@ -19,53 +19,51 @@ def solve(board, pents, app = None):
 
     coor_remain = set()
     cor_pent_dict = dict()
-    value_dict = dict()
+    pent_dict = dict()
 
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
             coordinate = (y,x)
             cor_pent_dict[coordinate] = list()
             coor_remain.add(coordinate)
+    
+    pents_remain = []
+    for p in pents:
+        pents_remain.append(get_pent_idx(p))
+        pent_dict[get_pent_idx(p)] = []
 
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
             coordinate = (y,x)
             for pent in pents:
                 rot_flip_list = generate_ori(pent)
+                pidx = get_pent_idx(pent)
                 for ori_pent in rot_flip_list:
                     cor_add_list =  check_placement(board, ori_pent, coordinate)
                     if cor_add_list != None:
                         for coor in cor_add_list:
                             cor_pent_dict[coor].append((coordinate, ori_pent, cor_add_list))
-                            key = tuple(cor_add_list)
-                            if key not in value_dict.keys():
-                                value_dict[key] = set([coor])
-                            else: 
-                                value_dict[key].add(coor)
+                        pent_dict[pidx].append(cor_add_list)
     
     # for c in cor_pent_dict.keys():
-    #     cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: len(value_dict[tuple(value[2])]), reverse = True)
+    #     cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: len(pent_dict[tuple(value[2])]), reverse = True)
     
     # for y in range(board.shape[0]):
     #     for x in range(board.shape[1]):
     #         coordinate = (y,x)
     #         shuffle(cor_pent_dict[coordinate])
-                        
-    pents_remain = []
-    for p in pents:
-        pents_remain.append(get_pent_idx(p))
     
-    solution = recursion([], value_dict, cor_pent_dict, coor_remain, pents_remain)
+    solution = recursion([], pent_dict, cor_pent_dict, coor_remain, pents_remain)
     print(solution)
     return solution
             
-def recursion(solution, value_dict, cor_pent_dict, coor_remain, pents_remain):
+def recursion(solution, pent_dict, cor_pent_dict, coor_remain, pents_remain):
     least_coor = min(cor_pent_dict.keys(), key=lambda least_coor: len(cor_pent_dict[least_coor]))
     if len(cor_pent_dict[least_coor]) == 0:
         return None
-    temp_cor_pent = []
+    temp_cor_pent_dict = []
     for i in range(len(cor_pent_dict[least_coor])):
-        value = max(cor_pent_dict[least_coor], key=lambda value: len(value_dict[tuple(value[2])]))
+        value = min(cor_pent_dict[least_coor], key=lambda value: len(pent_dict[get_pent_idx(value[1])]))
 
         assignment_cor = value[0]
         ori_pent = value[1]
@@ -94,20 +92,22 @@ def recursion(solution, value_dict, cor_pent_dict, coor_remain, pents_remain):
                     temp_pop_list.append((c, i, temp))
                     cor_pent_dict[c].pop(i)
         
-        temp_value = value_dict[tuple(cor_add_list)]
-        value_dict.pop(tuple(cor_add_list))
+        temp_value = pent_dict[pidx]
+        pent_dict.pop(pidx)
 
         temp_value_list = []
-        for v in value_dict.keys():
-            for c in cor_add_list:
-                if c in value_dict[v]:
-                    temp_value_list.append((v, c))
-                    value_dict[v].remove(c)
+        for k in pent_dict.keys():
+            for i in range(len(pent_dict[k])- 1, -1, -1):
+                temp_set = pent_dict[k][i]
+                if len(temp_set & cor_add_list) != 0:
+                    temp_value_list.append((k, i, temp_set))
+                    pent_dict[k].pop(i)
+            
 
         if len(coor_remain) == 0:
             return solution
 
-        result = recursion(solution, value_dict, cor_pent_dict, coor_remain, pents_remain)
+        result = recursion(solution, pent_dict, cor_pent_dict, coor_remain, pents_remain)
         if result != None:
             return result
         else:
@@ -121,14 +121,18 @@ def recursion(solution, value_dict, cor_pent_dict, coor_remain, pents_remain):
             for c, temp in temp_list:
                 cor_pent_dict[c] = temp
 
-            for v, c in temp_value_list:
-                value_dict[v].add(c)
+            for k, i, temp in temp_value_list:
+                pent_dict[k].insert(i, temp)
             
-            value_dict[tuple(value[2])] = temp_value
-        temp_cor_pent.append(value)
-        cor_pent_dict[least_coor].remove(value)
+            pent_dict[pidx] = temp_value
+
+        temp_cor_pent_dict.append(value)
+        for index in range(len(cor_pent_dict[least_coor])):
+            if cor_pent_dict[least_coor][index][2] == cor_add_list:
+                cor_pent_dict[least_coor].pop(index)
+                break
     
-    for v in temp_cor_pent:
+    for v in temp_cor_pent_dict:
         cor_pent_dict[least_coor].append(v)
 
     return None
