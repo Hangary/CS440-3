@@ -15,10 +15,9 @@ def solve(board, pents, app = None):
     
     -You can assume there will always be a solution.
     """
-    coor_remain = set()
-
     board = np.negative(board)
 
+    coor_remain = set()
     cor_pent_dict = dict()
 
     for y in range(board.shape[0]):
@@ -37,6 +36,11 @@ def solve(board, pents, app = None):
                     if cor_add_list != None:
                         for coor in cor_add_list:
                             cor_pent_dict[coor].append((coordinate, ori_pent, cor_add_list))
+    
+    # for y in range(board.shape[0]):
+    #     for x in range(board.shape[1]):
+    #         coordinate = (y,x)
+    #         shuffle(cor_pent_dict[coordinate])
                         
     pents_remain = []
     for p in pents:
@@ -132,35 +136,16 @@ def get_pent_idx(pent):
 
 def generate_ori(pent): # idx, rot:(0 - 3), flip:(0: non_flip; 1:fliped)
     result = []
-    pent_exits = []
-    idx = get_pent_idx(pent)
 
-    for i in range(4):
-        rot_pent = np.rot90(pent, i)
-        
-        rot_exits = False
-        for p in pent_exits:
-            if np.array_equal(p, rot_pent):
-                rot_exits = True
-                break
-        if not rot_exits:
-            pent_exits.append(rot_pent)
-            result.append(rot_pent)
-
-    
-    for i in range(4):
-        rot_pent = np.rot90(pent, i)
-        flip_pent = np.flip(rot_pent)
-
-        flip_exits = False
-
-        for p in pent_exits: # detect duplicates
-            if np.array_equal(p, flip_pent):
-                flip_exits = True
-                break
-
-        if not flip_exits:
-            pent_exits.append(flip_pent)
-            result.append(flip_pent)
-
+    transformed = []
+    transformed += [np.rot90(pent, i) for i in range(4)]
+    flipped = np.flip(pent, axis=1)
+    transformed += [np.rot90(flipped, i) for i in range(4)]
+    for p1 in transformed:
+        flag = True
+        for p2 in result:
+            if (np.array_equal(p1, p2)):
+                flag = False
+        if flag:
+            result.append(p1)
     return result
