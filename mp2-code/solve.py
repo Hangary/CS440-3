@@ -15,113 +15,81 @@ def solve(board, pents, app = None):
     
     -You can assume there will always be a solution.
     """
-    pent_dict = dict()
-    cor_dict = dict()
-
     coor_remain = set()
 
     board = np.negative(board)
 
-    for y in range(board.shape[0]):
-        for x in range(board.shape[1]):
-            coordinate = (y,x)
-            cor_dict[coordinate] = set()
+    cor_pent_dict = dict()
 
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
             coordinate = (y,x)
+            cor_pent_dict[coordinate] = list()
             coor_remain.add(coordinate)
-            if board[y][x] == -1:
-                for pent in pents:
-                    idx = get_pent_idx(pent)
-                    rot_flip_list = generate_ori(pent)
-                    for ori_pent in rot_flip_list:
-                        cor_add_list =  check_placement(board, ori_pent, coordinate)
-                        if cor_add_list != None:
-                            if idx not in pent_dict.keys():
-                                pent_dict[idx] = dict()
-                            for coor in cor_add_list:
-                                if coor not in pent_dict[idx].keys():
-                                    pent_dict[idx][coor] = [(coordinate, ori_pent, cor_add_list)]
-                                else:
-                                    pent_dict[idx][coor].append((coordinate, ori_pent, cor_add_list))
-                                cor_dict[coor].add(idx)
+
+    for y in range(board.shape[0]):
+        for x in range(board.shape[1]):
+            coordinate = (y,x)
+            for pent in pents:
+                rot_flip_list = generate_ori(pent)
+                for ori_pent in rot_flip_list:
+                    cor_add_list =  check_placement(board, ori_pent, coordinate)
+                    if cor_add_list != None:
+                        for coor in cor_add_list:
+                            cor_pent_dict[coor].append((coordinate, ori_pent, cor_add_list))
                         
     pents_remain = []
     for p in pents:
         pents_remain.append(get_pent_idx(p))
     
-    solution = recursion([], pent_dict, cor_dict, coor_remain, pents_remain)
+    solution = recursion([], cor_pent_dict, coor_remain, pents_remain)
     print(solution)
     return solution
             
-def recursion(solution, pent_dict, cor_dict, coor_remain, pents_remain):
-    least_coor = min(cor_dict.keys(), key=lambda least_coor: len(cor_dict[least_coor]))
-    if len(cor_dict[least_coor]) == 0:
+def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
+    least_coor = min(cor_pent_dict.keys(), key=lambda least_coor: len(cor_pent_dict[least_coor]))
+    if len(cor_pent_dict[least_coor]) == 0:
         return None
-    for pidx in cor_dict[least_coor]:
-        for assignment_cor, ori_pent, cor_add_list in pent_dict[pidx][least_coor]:
-            if cor_add_list & coor_remain != cor_add_list:
-                continue
-            solution.append((ori_pent, assignment_cor))
-            pents_remain.remove(pidx)
+    for assignment_cor, ori_pent, cor_add_list in cor_pent_dict[least_coor]:
+        pidx = get_pent_idx(ori_pent)
+        solution.append((ori_pent, assignment_cor))
+        pents_remain.remove(pidx)
                 
-            for c in cor_add_list:
-                coor_remain.remove(c)
-                
-            # add_pent(board, pidx, cor_add_list)
+        for c in cor_add_list:
+            coor_remain.remove(c)
 
-            # print(board)
+        temp_list = []
+        for c in cor_add_list:
+            temp = cor_pent_dict[c]
+            temp_list.append((c, temp))
+            cor_pent_dict.pop(c)
 
-            temp_set_list = []
-            for c in cor_add_list:
-                temp_set = cor_dict[c]
-                temp_set_list.append((c, temp_set))
-                cor_dict.pop(c)
+        temp_pop_list = []
+        for c in cor_pent_dict.keys():
+            for i in range(len(cor_pent_dict[c])- 1, -1, -1):
+                temp = cor_pent_dict[c][i]
+                idx = get_pent_idx(temp[1])
+                temp_set = temp[2]
+                if idx == pidx or len(temp_set & cor_add_list) != 0:
+                    temp_pop_list.append((c, temp))
+                    cor_pent_dict[c].pop(i)
 
-            temp_pop_list = []
-            for c in cor_dict.keys():
-                if pidx in cor_dict[c]:
-                    cor_dict[c].remove(pidx)
-                    temp_pop_list.append((c, pidx))
+        if len(coor_remain) == 0:
+            return solution
 
-            # temp_pidx_dict = pent_dict[pidx]
-            # pent_dict.pop(pidx)
+        result = recursion(solution, cor_pent_dict, coor_remain, pents_remain)
+        if result != None:
+            return result
+        else:
+            solution.pop()
+            pents_remain.append(pidx)
+            coor_remain.update(cor_add_list)
 
-            # temp_pent_cor_list = []
-            # for k in pent_dict.keys():
-            #     for c in pent_dict[k].keys():
-            #         for i in range(len(pent_dict[k][c])- 1, -1, -1):
-            #         # for cor, s in pent_dict[k][c]:
-            #             cor = pent_dict[k][c][i][0]
-            #             s = pent_dict[k][c][i][1]
-            #             if len(s & cor_add_list) != 0:
-            #                 temp = (cor, s)
-            #                 temp_pent_cor_list.append((k, c, temp))
-            #                 pent_dict[k][c].pop(i)
+            for c, temp in temp_pop_list:
+                cor_pent_dict[c].append(temp)
 
-            if len(coor_remain) == 0:
-                return solution
-
-            result = recursion(solution, pent_dict, cor_dict, coor_remain, pents_remain)
-            if result != None:
-                return result
-            else:
-                solution.pop()
-                pents_remain.append(pidx)
-                coor_remain.update(cor_add_list)
-                # board[board == (pidx+1)] = -1
-
-                for c, idx in temp_pop_list:
-                    cor_dict[c].add(idx)
-
-                for c, temp in temp_set_list:
-                    cor_dict[c] = temp
-
-                # for k, c, temp in temp_pent_cor_list:
-                #     pent_dict[k][c].append(temp)
-
-                # pent_dict[pidx] = temp_pidx_dict
+            for c, temp in temp_list:
+                cor_pent_dict[c] = temp
 
     return None
 
@@ -169,6 +137,7 @@ def generate_ori(pent): # idx, rot:(0 - 3), flip:(0: non_flip; 1:fliped)
 
     for i in range(4):
         rot_pent = np.rot90(pent, i)
+        
         rot_exits = False
         for p in pent_exits:
             if np.array_equal(p, rot_pent):
