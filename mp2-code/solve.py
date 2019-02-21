@@ -19,6 +19,7 @@ def solve(board, pents, app = None):
 
     coor_remain = set()
     cor_pent_dict = dict()
+    value_dict = dict()
 
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
@@ -36,6 +37,14 @@ def solve(board, pents, app = None):
                     if cor_add_list != None:
                         for coor in cor_add_list:
                             cor_pent_dict[coor].append((coordinate, ori_pent, cor_add_list))
+                            key = tuple(cor_add_list)
+                            if key not in value_dict.keys():
+                                value_dict[key] = set([coor])
+                            else: 
+                                value_dict[key].add(coor)
+    
+    for c in cor_pent_dict.keys():
+        cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: len(value_dict[tuple(value[2])]), reverse = True)
     
     # for y in range(board.shape[0]):
     #     for x in range(board.shape[1]):
@@ -75,7 +84,7 @@ def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
                 idx = get_pent_idx(temp[1])
                 temp_set = temp[2]
                 if idx == pidx or len(temp_set & cor_add_list) != 0:
-                    temp_pop_list.append((c, temp))
+                    temp_pop_list.append((c, i, temp))
                     cor_pent_dict[c].pop(i)
 
         if len(coor_remain) == 0:
@@ -89,8 +98,8 @@ def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
             pents_remain.append(pidx)
             coor_remain.update(cor_add_list)
 
-            for c, temp in temp_pop_list:
-                cor_pent_dict[c].append(temp)
+            for c, i, temp in temp_pop_list:
+                cor_pent_dict[c].insert(i, temp)
 
             for c, temp in temp_list:
                 cor_pent_dict[c] = temp
