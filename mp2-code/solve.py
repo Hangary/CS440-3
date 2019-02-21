@@ -37,7 +37,7 @@ def solve(board, pents, app = None):
                     rot_flip_list = generate_ori(pent)
                     for ori_pent in rot_flip_list:
                         cor_add_list =  check_placement(board, ori_pent, coordinate)
-                        if cor_add_list != set():
+                        if cor_add_list != None:
                             if idx not in pent_dict.keys():
                                 pent_dict[idx] = dict()
                             for coor in cor_add_list:
@@ -51,32 +51,11 @@ def solve(board, pents, app = None):
     for p in pents:
         pents_remain.append(get_pent_idx(p))
     
-    solution = recursion(board, pents, [], pent_dict, cor_dict, coor_remain, pents_remain)
+    solution = recursion([], pent_dict, cor_dict, coor_remain, pents_remain)
     print(solution)
     return solution
             
-def recursion(board, pents, solution, pent_dict, cor_dict, coor_remain, pents_remain):
-    # cor_dict = dict()
-    # cor_pidx_dict = dict()
-    # for coordinate in coor_remain:
-    #     cor_dict[coordinate] = []
-    #     cor_pidx_dict[coordinate] = set()
-
-    # for coor in coor_remain:
-    #     for pidx in pents_remain:
-    #         if coor not in pent_dict[pidx].keys():
-    #             continue
-    #         for pent, cor_add_list in pent_dict[pidx][coor]:
-    #             valid = True
-    #             for c in cor_add_list:
-    #                 if c not in coor_remain:
-    #                     valid = False
-    #                     break
-    #             if valid:
-    #                 for c in cor_add_list:
-    #                     cor_dict[c].append((coor, pent, cor_add_list))
-    #                     cor_pidx_dict[c].add(pidx)
-
+def recursion(solution, pent_dict, cor_dict, coor_remain, pents_remain):
     least_coor = min(cor_dict.keys(), key=lambda least_coor: len(cor_dict[least_coor]))
     if len(cor_dict[least_coor]) == 0:
         return None
@@ -106,10 +85,25 @@ def recursion(board, pents, solution, pent_dict, cor_dict, coor_remain, pents_re
                     cor_dict[c].remove(pidx)
                     temp_pop_list.append((c, pidx))
 
-            if len(solution) == len(pents):
+            # temp_pidx_dict = pent_dict[pidx]
+            # pent_dict.pop(pidx)
+
+            # temp_pent_cor_list = []
+            # for k in pent_dict.keys():
+            #     for c in pent_dict[k].keys():
+            #         for i in range(len(pent_dict[k][c])- 1, -1, -1):
+            #         # for cor, s in pent_dict[k][c]:
+            #             cor = pent_dict[k][c][i][0]
+            #             s = pent_dict[k][c][i][1]
+            #             if len(s & cor_add_list) != 0:
+            #                 temp = (cor, s)
+            #                 temp_pent_cor_list.append((k, c, temp))
+            #                 pent_dict[k][c].pop(i)
+
+            if len(coor_remain) == 0:
                 return solution
 
-            result = recursion(board, pents, solution, pent_dict, cor_dict, coor_remain, pents_remain)
+            result = recursion(solution, pent_dict, cor_dict, coor_remain, pents_remain)
             if result != None:
                 return result
             else:
@@ -123,6 +117,12 @@ def recursion(board, pents, solution, pent_dict, cor_dict, coor_remain, pents_re
 
                 for c, temp in temp_set_list:
                     cor_dict[c] = temp
+
+                # for k, c, temp in temp_pent_cor_list:
+                #     pent_dict[k][c].append(temp)
+
+                # pent_dict[pidx] = temp_pidx_dict
+
     return None
 
 def add_pent(board, pidx, cor_add_list):
@@ -140,9 +140,9 @@ def check_placement(board, pent, coord):
         for col in range(pent.shape[1]):
             if pent[row][col] != 0:
                 if coord[0]+row >= board.shape[0] or coord[1]+col >= board.shape[1]: # outside board
-                    return set()
+                    return None
                 if board[coord[0]+row][coord[1]+col] >= 0: # Overlap
-                    return set()
+                    return None
                 cor_add_list.add((coord[0]+row, coord[1]+col))
     return cor_add_list
 
