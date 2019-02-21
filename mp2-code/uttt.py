@@ -23,8 +23,8 @@ class ultimateTicTacToe:
         self.globalIdx=[(0,0),(0,3),(0,6),(3,0),(3,3),(3,6),(6,0),(6,3),(6,6)]
 
         #Start local board index for reflex agent playing
-        self.startBoardIdx=4
-        #self.startBoardIdx=randint(0,8)
+        #self.startBoardIdx=2
+        self.startBoardIdx=randint(0,8)
 
         #utility value for reflex offensive and reflex defensive agents
         self.winnerMaxUtility=10000
@@ -72,7 +72,7 @@ class ultimateTicTacToe:
             list_temp1 = [board[i+row][0+column], board[i+row][1+column], board[i+row][2+column]]
             list_temp2 = [board[0+row][i+column], board[1+row][i+column], board[2+row][i+column]]
             if list_temp1 == self.winMax or list_temp2 == self.winMax:
-                return 10000, 0
+                return 10000
             if list_temp1 in self.twoInARowMax:
                 count_R2 += 500
             elif list_temp1 in self.twoInARowBlockMin:
@@ -84,7 +84,7 @@ class ultimateTicTacToe:
         list_temp1 = [board[row][column], board[row+1][column+1], board[row+2][column+2]]
         list_temp2 = [board[row][column+2], board[row+1][column+1], board[row+2][column]]
         if list_temp1 == self.winMax or list_temp2 == self.winMax:
-            return 10000, 0
+            return 10000
         if list_temp1 in self.twoInARowMax:
             count_R2 += 500
         elif list_temp1 in self.twoInARowBlockMin:
@@ -93,7 +93,7 @@ class ultimateTicTacToe:
             count_R2 += 500
         elif list_temp2 in self.twoInARowBlockMin:
             count_R2 += 100
-        return count_R2, 1
+        return count_R2
 
     def min_scoreOneBoard(self, row, column):
         """
@@ -111,7 +111,7 @@ class ultimateTicTacToe:
             list_temp1 = [board[i+row][0+column], board[i+row][1+column], board[i+row][2+column]]
             list_temp2 = [board[0+row][i+column], board[1+row][i+column], board[2+row][i+column]]
             if list_temp1 == self.winMin or list_temp2 == self.winMin:
-                return -10000, 0
+                return -10000
             if list_temp1 in self.twoInARowMin:
                 count_R2 -= 100
             elif list_temp1 in self.twoInARowBlockMax:
@@ -123,7 +123,7 @@ class ultimateTicTacToe:
         list_temp1 = [board[row][column], board[row+1][column+1], board[row+2][column+2]]
         list_temp2 = [board[row][column+2], board[row+1][column+1], board[row+2][column]]
         if list_temp1 == self.winMin or list_temp2 == self.winMin:
-            return -10000, 0
+            return -10000
         if list_temp1 in self.twoInARowMin:
             count_R2 -= 100
         elif list_temp1 in self.twoInARowBlockMax:
@@ -134,7 +134,7 @@ class ultimateTicTacToe:
             count_R2 -= 500
         if count_R2 < 0:
             rule2 = 1
-        return count_R2, 1
+        return count_R2
 
     def evaluatePredifined(self, isMax):
         """
@@ -150,14 +150,14 @@ class ultimateTicTacToe:
         if isMax:
             for x in self.globalIdx:
                 row, column = x
-                s, r = self.max_scoreOneBoard(row, column)
+                s= self.max_scoreOneBoard(row, column)
                 score += s
                 if score >= 10000:
                     return 10000
         else:
             for x in self.globalIdx:
                 row, column = x
-                s, r = self.min_scoreOneBoard(row, column)
+                s= self.min_scoreOneBoard(row, column)
                 score += s
                 if score <= -10000:
                     return -10000
@@ -186,6 +186,55 @@ class ultimateTicTacToe:
                          score -= 30
         return score
 
+    def Designed_scoreOneBoard(self, row, column):
+        count_R2 = 0
+        board = self.board
+        for i in range(3):
+            list_temp1 = [board[i+row][0+column], board[i+row][1+column], board[i+row][2+column]]
+            list_temp2 = [board[0+row][i+column], board[1+row][i+column], board[2+row][i+column]]
+            if list_temp1 == self.winMax or list_temp2 == self.winMax:
+                return 10000
+            if list_temp1 == self.winMin or list_temp2 == self.winMin:
+                return -10000
+            if list_temp1 in self.twoInARowMax:
+                count_R2 += 250
+            elif list_temp1 in self.twoInARowBlockMin:
+                count_R2 += 50
+            elif list_temp1 in self.twoInARowMin:
+                count_R2 -= 500
+            elif list_temp1 in self.twoInARowBlockMax:
+                count_R2 -= 100
+            if list_temp2 in self.twoInARowMax:
+                count_R2 += 250
+            elif list_temp2 in self.twoInARowBlockMin:
+                count_R2 += 50
+            elif list_temp2 in self.twoInARowMin:
+                count_R2 -= 500
+            elif list_temp2 in self.twoInARowBlockMax:
+                count_R2 -= 100
+        list_temp1 = [board[row][column], board[row+1][column+1], board[row+2][column+2]]
+        list_temp2 = [board[row][column+2], board[row+1][column+1], board[row+2][column]]
+        if list_temp1 == self.winMax or list_temp2 == self.winMax:
+            return 10000
+        if list_temp1 == self.winMin or list_temp2 == self.winMin:
+            return -10000
+        if list_temp1 in self.twoInARowMax:
+            count_R2 += 250
+        elif list_temp1 in self.twoInARowBlockMin:
+            count_R2 += 50
+        elif list_temp1 in self.twoInARowMin:
+            count_R2 -= 500
+        elif list_temp1 in self.twoInARowBlockMax:
+            count_R2 -= 100
+        if list_temp2 in self.twoInARowMax:
+            count_R2 += 250
+        elif list_temp2 in self.twoInARowBlockMin:
+            count_R2 += 50
+        elif list_temp2 in self.twoInARowMin:
+            count_R2 -= 500
+        elif list_temp2 in self.twoInARowBlockMax:
+            count_R2 -= 100
+        return count_R2
 
     def evaluateDesigned(self, isMax):
         """
@@ -196,9 +245,28 @@ class ultimateTicTacToe:
         output:
         score(float): estimated utility score for maxPlayer or minPlayer
         """
-        #YOUR CODE HERE
-        score=0
+        score = 0
+        for x in self.globalIdx:
+            row, column = x
+            s= self.Designed_scoreOneBoard(row, column)
+            score += s
+            if score <= -10000:
+                return -10000
+            if score >= 10000:
+                return 10000
+        if score == 0:
+            for x in self.globalIdx:
+                row, column = x
+                if self.board[row][column] == self.minPlayer:
+                    score -= 30
+                if self.board[row+2][column] == self.minPlayer:
+                    score -= 30
+                if self.board[row][column+2] == self.minPlayer:
+                    score -= 30
+                if self.board[row+2][column+2] == self.minPlayer:
+                    score -= 30
         return score
+
 
     def checkMovesLeft(self):
         """
