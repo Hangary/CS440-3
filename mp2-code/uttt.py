@@ -23,8 +23,8 @@ class ultimateTicTacToe:
         self.globalIdx=[(0,0),(0,3),(0,6),(3,0),(3,3),(3,6),(6,0),(6,3),(6,6)]
 
         #Start local board index for reflex agent playing
-        #self.startBoardIdx=2
-        self.startBoardIdx=randint(0,8)
+        self.startBoardIdx=2
+        #self.startBoardIdx=randint(0,8)
 
         #utility value for reflex offensive and reflex defensive agents
         self.winnerMaxUtility=10000
@@ -46,6 +46,7 @@ class ultimateTicTacToe:
         self.twoInARowBlockMax = [['X','X','O'],['X','O','X'],['O','X','X']]
         self.winMax = ['X','X','X']
         self.winMin = ['O','O','O']
+        self.ownagent = 0
 
     def printGameBoard(self):
         """
@@ -157,7 +158,10 @@ class ultimateTicTacToe:
         else:
             for x in self.globalIdx:
                 row, column = x
-                s= self.min_scoreOneBoard(row, column)
+                if self.ownagent == 0:
+                    s= self.min_scoreOneBoard(row, column)
+                else:
+                    s= self.Designed_scoreOneBoard(row, column)
                 score += s
                 if score <= -10000:
                     return -10000
@@ -519,9 +523,9 @@ class ultimateTicTacToe:
         winner(int): 1 for maxPlayer is the winner, -1 for minPlayer is the winner, and 0 for tie.
         """
         #YOUR CODE HERE
-        bestMove=[]
-        gameBoards=[]
-        winner=0
+        self.ownagent = 1
+        maxFirst = randint(0,2)
+        gameBoards, bestMove, expandedNodes, bestValue, winner = self.playGamePredifinedAgent(maxFirst,False,False)
         return gameBoards, bestMove, winner
 
 
@@ -544,6 +548,7 @@ if __name__=="__main__":
     #gameBoards, bestMove, bestValue, winner=uttt.playGameReflexAgent()
     gameBoards, bestMove, expandedNodes, bestValue, winner=uttt.playGamePredifinedAgent(1,0,0)
     print(expandedNodes)
+    #gameBoards, bestMove, winner = uttt.playGameYourAgent()
     if winner == 1:
         print("The winner is maxPlayer!!!")
     elif winner == -1:
