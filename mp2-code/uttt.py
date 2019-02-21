@@ -55,7 +55,7 @@ class ultimateTicTacToe:
         print('\n'.join([' '.join([str(cell) for cell in row]) for row in self.board[3:6]])+'\n')
         print('\n'.join([' '.join([str(cell) for cell in row]) for row in self.board[6:9]])+'\n')
 
-    def max_scoreOneBoard(self, row, column, rule2):
+    def max_scoreOneBoard(self, row, column):
         """
         row, column: top left corner
         First rule: If the offensive agent wins (form three-in-a-row), set the utility score to be 10000.
@@ -67,7 +67,6 @@ class ultimateTicTacToe:
         Third rule: For each corner taken by the offensive agent, increment the utility score by 30.
         """
         count_R2 = 0
-        count_R3 = 0
         board = self.board
         for i in range(3):
             list_temp1 = [board[i+row][0+column], board[i+row][1+column], board[i+row][2+column]]
@@ -94,23 +93,9 @@ class ultimateTicTacToe:
             count_R2 += 500
         elif list_temp2 in self.twoInARowBlockMin:
             count_R2 += 100
-        if count_R2 > 0:
-            rule2 = 1
-        if rule2 == 1:
-            return count_R2, 1
-        else:
-            if board[row][column] == self.maxPlayer:
-                count_R3 += 30
-            if board[row+2][column] == self.maxPlayer:
-                count_R3 += 30
-            if board[row][column+2] == self.maxPlayer:
-                count_R3 += 30
-            if board[row+2][column+2] == self.maxPlayer:
-                count_R3 += 30
-            return count_R3, 0
-        return 0, 0
+        return count_R2, 1
 
-    def min_scoreOneBoard(self, row, column, rule2):
+    def min_scoreOneBoard(self, row, column):
         """
         row, column: top left corner
         First rule: If the defensive agent wins (forms three-in-a-row), set the utility score to be -10000.
@@ -121,7 +106,6 @@ class ultimateTicTacToe:
         Third rule: For each corner taken by defensive agent, decrement the utility score by 30.
         """
         count_R2 = 0
-        count_R3 = 0
         board = self.board
         for i in range(3):
             list_temp1 = [board[i+row][0+column], board[i+row][1+column], board[i+row][2+column]]
@@ -150,19 +134,7 @@ class ultimateTicTacToe:
             count_R2 -= 500
         if count_R2 < 0:
             rule2 = 1
-        if rule2 == 1:
-            return count_R2, 1
-        else:
-            if board[row][column] == self.minPlayer:
-                count_R3 -= 30
-            if board[row+2][column] == self.minPlayer:
-                count_R3 -= 30
-            if board[row][column+2] == self.minPlayer:
-                count_R3 -= 30
-            if board[row+2][column+2] == self.minPlayer:
-                count_R3 -= 30
-            return count_R3, 0
-        return 0, 0
+        return count_R2, 1
 
     def evaluatePredifined(self, isMax):
         """
@@ -175,21 +147,43 @@ class ultimateTicTacToe:
         """
         #YOUR CODE HERE
         score = 0
-        r = 0
         if isMax:
             for x in self.globalIdx:
                 row, column = x
-                s, r = self.max_scoreOneBoard(row, column, r)
+                s, r = self.max_scoreOneBoard(row, column)
                 score += s
                 if score >= 10000:
                     return 10000
         else:
             for x in self.globalIdx:
                 row, column = x
-                s, r = self.min_scoreOneBoard(row, column, r)
+                s, r = self.min_scoreOneBoard(row, column)
                 score += s
                 if score <= -10000:
                     return -10000
+        if score == 0:
+            if isMax:
+                for x in self.globalIdx:
+                    row, column = x
+                    if self.board[row][column] == self.maxPlayer:
+                        score += 30
+                    if self.board[row+2][column] == self.maxPlayer:
+                        score += 30
+                    if self.board[row][column+2] == self.maxPlayer:
+                        score += 30
+                    if self.board[row+2][column+2] == self.maxPlayer:
+                        score += 30
+            else:
+                 for x in self.globalIdx:
+                     row, column = x
+                     if self.board[row][column] == self.minPlayer:
+                         score -= 30
+                     if self.board[row+2][column] == self.minPlayer:
+                         score -= 30
+                     if self.board[row][column+2] == self.minPlayer:
+                         score -= 30
+                     if self.board[row+2][column+2] == self.minPlayer:
+                         score -= 30
         return score
 
 
@@ -258,7 +252,7 @@ class ultimateTicTacToe:
         else:
             bestValue = 100000
         if depth == 0:
-            return self.evaluatePredifined(isMax)
+            return self.evaluatePredifined(not isMax)
         row, column = self.globalIdx[currBoardIdx]
         iffull = 1
         for i in range(3):
@@ -271,14 +265,15 @@ class ultimateTicTacToe:
                         self.board[i+row][j+column] = '_'
                         if bestValue > beta:
                             return bestValue
+                        alpha = max(alpha, bestValue)
                     else:
                         self.board[i+row][j+column] = self.minPlayer
                         bestValue = min(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
                         self.board[i+row][j+column] = '_'
                         if bestValue < alpha:
                             return bestValue
-                    alpha = max(alpha, bestValue)
-                    beta = min(beta, bestValue)
+                        beta = min(beta, bestValue)
+
         if iffull == 1:
             for x in self.globalIdx:
                 row, column = x
@@ -291,15 +286,16 @@ class ultimateTicTacToe:
                                 self.board[i+row][j+column] = '_'
                                 if bestValue > beta:
                                     return bestValue
+                                alpha = max(alpha, bestValue)
                             else:
                                 self.board[i+row][j+column] = self.minPlayer
                                 bestValue = min(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
                                 self.board[i+row][j+column] = '_'
                                 if bestValue < alpha:
                                     return bestValue
-                            alpha = max(alpha, score)
-                            beta = min(beta, score)
+                                beta = min(beta, bestValue)
         return bestValue
+
 
     def minimax(self, depth, currBoardIdx, isMax):
         """
@@ -326,7 +322,7 @@ class ultimateTicTacToe:
         else:
             bestValue = 100000
         if depth == 0:
-            return self.evaluatePredifined(isMax)
+            return self.evaluatePredifined(not isMax)
         row, column = self.globalIdx[currBoardIdx]
         iffull = 1
         for i in range(3):
@@ -401,28 +397,28 @@ class ultimateTicTacToe:
                         if nextisMax:
                             self.board[i+row][j+column] = self.maxPlayer
                             if isMinimaxOffensive:
-                                score = self.minimax(1, i*3+j, not nextisMax)
+                                score = self.minimax(2, i*3+j,0)
                             else:
-                                score = self.alphabeta(1, i*3+j, alpha, beta, not nextisMax)
+                                score = self.alphabeta(2, i*3+j, alpha, beta, 0)
                         else:
                             self.board[i+row][j+column] = self.minPlayer
                             if isMinimaxDefensive:
-                                score = self.minimax(1, i*3+j, not nextisMax)
+                                score = self.minimax(2, i*3+j, 1)
                             else:
-                                score = self.alphabeta(1, i*3+j, alpha, beta, not nextisMax)
+                                score = self.alphabeta(2, i*3+j, alpha, beta, 1)
                         self.board[i+row][j+column] = '_'
                         if nextisMax:
                             if score > cur_score:
                                 cur_score = score
                                 cur_step = ((i+row), (j+column))
                                 board_index = i*3+j
+                                alpha = max(alpha, cur_score)
                         else:
                             if score < cur_score:
                                 cur_score = score
                                 cur_step = ((i+row), (j+column))
                                 board_index = i*3+j
-                        alpha = max(alpha, cur_score)
-                        beta = min(beta, cur_score)
+                                beta = min(beta, cur_score)
             bestMove.append(cur_step)
             bestValue.append(cur_score)
             expandedNodes.append(self.expandedNodes)
