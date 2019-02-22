@@ -53,6 +53,7 @@ def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
     temp_cor_pent_dict = []
     for i in range(len(cor_pent_dict[least_coor])):
         value_index, value = min(enumerate(cor_pent_dict[least_coor]), key=lambda pair: sum([len(cor_pent_dict[coor]) for coor in pair[1][2]]))
+    # for value in sorted(cor_pent_dict[least_coor], key=lambda value: sum([len(cor_pent_dict[coor]) for coor in value[2]])):
         assignment_cor = value[0]
         ori_pent = value[1]
         cor_add_list = value[2]
