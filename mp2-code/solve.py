@@ -22,11 +22,13 @@ def solve(board, pents, app = None):
     cor_pent_dict = dict()
     pent_dict = dict()
 
+    cor_count_dict = dict()
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
             coordinate = (y,x)
             cor_pent_dict[coordinate] = list()
             coor_remain.add(coordinate)
+            cor_count_dict[coordinate] = 0
     
     pents_remain = []
     for p in pents:
@@ -44,10 +46,15 @@ def solve(board, pents, app = None):
                     if cor_add_list != None:
                         for coor in cor_add_list:
                             cor_pent_dict[coor].append((coordinate, ori_pent, cor_add_list))
+
+                            cor_count_dict[coor] += 1
+
                         pent_dict[pidx].append(tuple(cor_add_list))
+
     
     for c in cor_pent_dict.keys():
-        cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: len(pent_dict[get_pent_idx(value[1])]), reverse = False)
+        # cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: len(pent_dict[get_pent_idx(value[1])]), reverse = False)
+        cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: sum([cor_count_dict[cor] for cor in value[2]]), reverse = False)
     
     # for y in range(board.shape[0]):
     #     for x in range(board.shape[1]):
