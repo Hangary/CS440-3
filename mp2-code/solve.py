@@ -34,7 +34,8 @@ def solve(board, pents, app = None):
     for p in pents:
         pents_remain.append(get_pent_idx(p))
         pent_dict[get_pent_idx(p)] = []
-
+    
+    sort_dict = dict()
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
             coordinate = (y,x)
@@ -50,11 +51,25 @@ def solve(board, pents, app = None):
                             cor_count_dict[coor] += 1
 
                         pent_dict[pidx].append(tuple(cor_add_list))
-
+                        sort_dict[(pidx, tuple(cor_add_list))] = 0
     
-    for c in cor_pent_dict.keys():
+    # for c in cor_pent_dict.keys():
+    #     for coordinate, ori_pent, cor_add_list in cor_pent_dict[c]:
+    #         for t in sort_dict.keys():
+    #             idx = t[0]
+    #             l = t[1]
+    #             if idx == get_pent_idx(ori_pent):
+    #                 sort_dict[t] += 1
+    #             else:
+    #                 for cor in l:
+    #                     if cor in cor_add_list:
+    #                         sort_dict[t] += 1
+    #                         break
+    
+    # for c in cor_pent_dict.keys():
         # cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: len(pent_dict[get_pent_idx(value[1])]), reverse = False)
-        cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: sum([cor_count_dict[cor] for cor in value[2]]), reverse = False)
+        # cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: sum([cor_count_dict[cor] for cor in value[2]]), reverse = False)
+        # cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: sort_dict[(get_pent_idx(value[1]), tuple(value[2]))], reverse = False)
     
     # for y in range(board.shape[0]):
     #     for x in range(board.shape[1]):
@@ -69,10 +84,11 @@ def recursion(solution, pent_dict, cor_pent_dict, coor_remain, pents_remain):
     least_coor = min(cor_pent_dict.keys(), key=lambda least_coor: len(cor_pent_dict[least_coor]))
     if len(cor_pent_dict[least_coor]) == 0:
         return None
-    # temp_cor_pent_dict = []
+    temp_cor_pent_dict = []
     for i in range(len(cor_pent_dict[least_coor])):
         # value_index, value = min(enumerate(cor_pent_dict[least_coor]), key=lambda value: len(pent_dict[get_pent_idx(value[1][1])]))
-        value = cor_pent_dict[least_coor][i]
+        value_index, value = min(enumerate(cor_pent_dict[least_coor]), key=lambda pair: sum([len(cor_pent_dict[coor]) for coor in pair[1][2]]))
+        # value = cor_pent_dict[least_coor][i]
         assignment_cor = value[0]
         ori_pent = value[1]
         cor_add_list = value[2]
@@ -134,16 +150,16 @@ def recursion(solution, pent_dict, cor_pent_dict, coor_remain, pents_remain):
             
             # pent_dict[pidx] = temp_value
 
-        # temp_cor_pent_dict.append(value)
-        # cor_pent_dict[least_coor].pop(value_index)
+        temp_cor_pent_dict.append(value)
+        cor_pent_dict[least_coor].pop(value_index)
 
         # for index in range(len(cor_pent_dict[least_coor])):
         #     if cor_pent_dict[least_coor][index][2] == cor_add_list:
         #         cor_pent_dict[least_coor].pop(index)
         #         break
     
-    # for v in temp_cor_pent_dict:
-    #     cor_pent_dict[least_coor].append(v)
+    for v in temp_cor_pent_dict:
+        cor_pent_dict[least_coor].append(v)
 
     return None
 
