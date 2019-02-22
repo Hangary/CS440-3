@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from random import shuffle
+import operator
 
 def solve(board, pents, app = None):
     """
@@ -43,16 +44,16 @@ def solve(board, pents, app = None):
                     if cor_add_list != None:
                         for coor in cor_add_list:
                             cor_pent_dict[coor].append((coordinate, ori_pent, cor_add_list))
-                        pent_dict[pidx].append(cor_add_list)
+                        pent_dict[pidx].append(tuple(cor_add_list))
     
-    # for c in cor_pent_dict.keys():
-    #     cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: len(pent_dict[tuple(value[2])]), reverse = True)
+    for c in cor_pent_dict.keys():
+        cor_pent_dict[c] = sorted(cor_pent_dict[c], key=lambda value: len(pent_dict[get_pent_idx(value[1])]), reverse = False)
     
     # for y in range(board.shape[0]):
     #     for x in range(board.shape[1]):
     #         coordinate = (y,x)
     #         shuffle(cor_pent_dict[coordinate])
-    
+
     solution = recursion([], pent_dict, cor_pent_dict, coor_remain, pents_remain)
     print(solution)
     return solution
@@ -61,10 +62,10 @@ def recursion(solution, pent_dict, cor_pent_dict, coor_remain, pents_remain):
     least_coor = min(cor_pent_dict.keys(), key=lambda least_coor: len(cor_pent_dict[least_coor]))
     if len(cor_pent_dict[least_coor]) == 0:
         return None
-    temp_cor_pent_dict = []
+    # temp_cor_pent_dict = []
     for i in range(len(cor_pent_dict[least_coor])):
-        value = min(cor_pent_dict[least_coor], key=lambda value: len(pent_dict[get_pent_idx(value[1])]))
-
+        # value_index, value = min(enumerate(cor_pent_dict[least_coor]), key=lambda value: len(pent_dict[get_pent_idx(value[1][1])]))
+        value = cor_pent_dict[least_coor][i]
         assignment_cor = value[0]
         ori_pent = value[1]
         cor_add_list = value[2]
@@ -92,16 +93,16 @@ def recursion(solution, pent_dict, cor_pent_dict, coor_remain, pents_remain):
                     temp_pop_list.append((c, i, temp))
                     cor_pent_dict[c].pop(i)
         
-        temp_value = pent_dict[pidx]
-        pent_dict.pop(pidx)
+        # temp_value = pent_dict[pidx]
+        # pent_dict.pop(pidx)
 
-        temp_value_list = []
-        for k in pent_dict.keys():
-            for i in range(len(pent_dict[k])- 1, -1, -1):
-                temp_set = pent_dict[k][i]
-                if len(temp_set & cor_add_list) != 0:
-                    temp_value_list.append((k, i, temp_set))
-                    pent_dict[k].pop(i)
+        # temp_value_list = []
+        # for k in pent_dict.keys():
+        #     for i in range(len(pent_dict[k])- 1, -1, -1):
+        #         temp_set = pent_dict[k][i]
+        #         if temp_set == tuple(cor_add_list):
+        #             temp_value_list.append((k, i, temp_set))
+        #             pent_dict[k].pop(i)
             
 
         if len(coor_remain) == 0:
@@ -121,19 +122,21 @@ def recursion(solution, pent_dict, cor_pent_dict, coor_remain, pents_remain):
             for c, temp in temp_list:
                 cor_pent_dict[c] = temp
 
-            for k, i, temp in temp_value_list:
-                pent_dict[k].insert(i, temp)
+            # for k, i, temp in temp_value_list:
+            #     pent_dict[k].insert(i, temp)
             
-            pent_dict[pidx] = temp_value
+            # pent_dict[pidx] = temp_value
 
-        temp_cor_pent_dict.append(value)
-        for index in range(len(cor_pent_dict[least_coor])):
-            if cor_pent_dict[least_coor][index][2] == cor_add_list:
-                cor_pent_dict[least_coor].pop(index)
-                break
+        # temp_cor_pent_dict.append(value)
+        # cor_pent_dict[least_coor].pop(value_index)
+
+        # for index in range(len(cor_pent_dict[least_coor])):
+        #     if cor_pent_dict[least_coor][index][2] == cor_add_list:
+        #         cor_pent_dict[least_coor].pop(index)
+        #         break
     
-    for v in temp_cor_pent_dict:
-        cor_pent_dict[least_coor].append(v)
+    # for v in temp_cor_pent_dict:
+    #     cor_pent_dict[least_coor].append(v)
 
     return None
 
