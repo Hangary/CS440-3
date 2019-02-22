@@ -335,14 +335,14 @@ class ultimateTicTacToe:
                         self.board[i+row][j+column] = self.maxPlayer
                         bestValue = max(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
                         self.board[i+row][j+column] = '_'
-                        if bestValue > beta:
+                        if bestValue >= beta:
                             return bestValue
                         alpha = max(alpha, bestValue)
                     else:
                         self.board[i+row][j+column] = self.minPlayer
                         bestValue = min(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
                         self.board[i+row][j+column] = '_'
-                        if bestValue < alpha:
+                        if bestValue <= alpha:
                             return bestValue
                         beta = min(beta, bestValue)
 
@@ -356,14 +356,14 @@ class ultimateTicTacToe:
                                 self.board[i+row][j+column] = self.maxPlayer
                                 bestValue = max(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
                                 self.board[i+row][j+column] = '_'
-                                if bestValue > beta:
+                                if bestValue >= beta:
                                     return bestValue
                                 alpha = max(alpha, bestValue)
                             else:
                                 self.board[i+row][j+column] = self.minPlayer
                                 bestValue = min(self.alphabeta(depth-1, i*3+j, alpha, beta, not isMax), bestValue)
                                 self.board[i+row][j+column] = '_'
-                                if bestValue < alpha:
+                                if bestValue <= alpha:
                                     return bestValue
                                 beta = min(beta, bestValue)
         return bestValue
@@ -643,10 +643,10 @@ class ultimateTicTacToe:
 if __name__=="__main__":
     uttt=ultimateTicTacToe()
     #gameBoards, bestMove, bestValue, winner=uttt.playGameReflexAgent()
-    #gameBoards, bestMove, expandedNodes, bestValue, winner=uttt.playGamePredifinedAgent(0,0,0)
-    #print(bestMove)
-    #print(expandedNodes)
-    gameBoards, bestMove, winner = uttt.playGameHuman()
+    gameBoards, bestMove, expandedNodes, bestValue, winner=uttt.playGamePredifinedAgent(1,0,0)
+    print(bestMove)
+    print(expandedNodes)
+    #gameBoards, bestMove, winner = uttt.playGameHuman()
     #gameBoards, bestMove, winner = uttt.playGameYourAgent()
     if winner == 1:
         print("The winner is maxPlayer!!!")
