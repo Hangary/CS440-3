@@ -574,15 +574,16 @@ class ultimateTicTacToe:
                 except:
                     print("invalid")
                     continue
-                if self.board[i+row][j+column] == '_':
-                    self.board[i+row][j+column] = self.maxPlayer
-                    cur_step = ((i+row), (j+column))
-                    board_index = i*3+j
-                    bestMove.append(cur_step)
-                    gameBoards.append(self.board.copy())
-                    row, column = self.globalIdx[board_index]
-                    self.printGameBoard()
-                    break
+                if (i >= 0 and i <= 2) and (j >= 0 and j <= 2):
+                    if self.board[i+row][j+column] == '_':
+                        self.board[i+row][j+column] = self.maxPlayer
+                        cur_step = ((i+row), (j+column))
+                        board_index = i*3+j
+                        bestMove.append(cur_step)
+                        gameBoards.append(self.board.copy())
+                        row, column = self.globalIdx[board_index]
+                        self.printGameBoard()
+                        break
                 print("invalid")
         nextisMax = 0
         while count < 81:
@@ -622,12 +623,13 @@ class ultimateTicTacToe:
                     except:
                         print("invalid")
                         continue
-                    if self.board[i+row][j+column] == '_':
-                        self.board[i+row][j+column] = self.maxPlayer
-                        cur_step = ((i+row), (j+column))
-                        board_index = i*3+j
-                        bestMove.append(cur_step)
-                        break
+                    if (i >= 0 and i <= 2) and (j >= 0 and j <= 2):
+                        if self.board[i+row][j+column] == '_':
+                            self.board[i+row][j+column] = self.maxPlayer
+                            cur_step = ((i+row), (j+column))
+                            board_index = i*3+j
+                            bestMove.append(cur_step)
+                            break
                     print("invalid")
             gameBoards.append(self.board.copy())
             row, column = self.globalIdx[board_index]
@@ -643,10 +645,10 @@ class ultimateTicTacToe:
 if __name__=="__main__":
     uttt=ultimateTicTacToe()
     #gameBoards, bestMove, bestValue, winner=uttt.playGameReflexAgent()
-    gameBoards, bestMove, expandedNodes, bestValue, winner=uttt.playGamePredifinedAgent(0,1,1)
-    print(bestMove)
-    print(expandedNodes)
-    #gameBoards, bestMove, winner = uttt.playGameHuman()
+    #gameBoards, bestMove, expandedNodes, bestValue, winner=uttt.playGamePredifinedAgent(0,1,1)
+    #print(bestMove)
+    #print(expandedNodes)
+    gameBoards, bestMove, winner = uttt.playGameHuman()
     #gameBoards, bestMove, winner = uttt.playGameYourAgent()
     if winner == 1:
         print("The winner is maxPlayer!!!")
