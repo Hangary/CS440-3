@@ -26,11 +26,9 @@ def solve(board, pents, app = None):
             cor_pent_dict[coordinate] = list()
             coor_remain.add(coordinate)
     
-    pents_remain = []
     all_pents = dict()
     for p in pents:
         idx = get_pent_idx(p)
-        pents_remain.append(idx)
 
         rot_flip = generate_ori(p)
         all_pents[idx] = rot_flip
@@ -47,10 +45,10 @@ def solve(board, pents, app = None):
                         for coor in cor_add_list:
                             cor_pent_dict[coor].append((coordinate, ori_pent, cor_add_list, pidx))
 
-    solution = recursion([], cor_pent_dict, coor_remain, pents_remain)
+    solution = recursion([], cor_pent_dict, coor_remain)
     return solution
             
-def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
+def recursion(solution, cor_pent_dict, coor_remain):
     least_coor = min(cor_pent_dict.keys(), key=lambda least_coor: len(cor_pent_dict[least_coor]))
     if len(cor_pent_dict[least_coor]) == 0:
         return None
@@ -63,7 +61,6 @@ def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
         pidx = value[3]
 
         solution.append((ori_pent, assignment_cor))
-        pents_remain.remove(pidx)
                 
         for c in cor_add_list:
             coor_remain.remove(c)
@@ -87,12 +84,11 @@ def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
         if len(coor_remain) == 0:
             return solution
 
-        result = recursion(solution, cor_pent_dict, coor_remain, pents_remain)
+        result = recursion(solution, cor_pent_dict, coor_remain)
         if result != None:
             return result
         else:
             solution.pop()
-            pents_remain.append(pidx)
             coor_remain.update(cor_add_list)
 
             for c, i, temp in temp_pop_list:
