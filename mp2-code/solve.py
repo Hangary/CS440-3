@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from random import shuffle
 import operator
 
 def solve(board, pents, app = None):
@@ -49,7 +48,6 @@ def solve(board, pents, app = None):
                             cor_pent_dict[coor].append((coordinate, ori_pent, cor_add_list, pidx))
 
     solution = recursion([], cor_pent_dict, coor_remain, pents_remain)
-    # print(solution)
     return solution
             
 def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
@@ -59,7 +57,6 @@ def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
     temp_cor_pent_dict = []
     for i in range(len(cor_pent_dict[least_coor])):
         value_index, value = min(enumerate(cor_pent_dict[least_coor]), key=lambda pair: sum([len(cor_pent_dict[coor]) for coor in pair[1][2]]))
-    # for value in sorted(cor_pent_dict[least_coor], key=lambda value: sum([len(cor_pent_dict[coor]) for coor in value[2]])):
         assignment_cor = value[0]
         ori_pent = value[1]
         cor_add_list = value[2]
@@ -111,15 +108,6 @@ def recursion(solution, cor_pent_dict, coor_remain, pents_remain):
         cor_pent_dict[least_coor].append(v)
 
     return None
-
-def add_pent(board, pidx, cor_add_list):
-    for c in cor_add_list:
-        row = c[0]
-        col = c[1]
-        if board[row][col] != -1:
-            print ("                                                       error")
-
-        board[row][col] = (pidx + 1)
 
 def check_placement(board, pent, coord):
     cor_add_list = set()

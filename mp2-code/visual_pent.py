@@ -207,7 +207,7 @@ if __name__ == "__main__":
     """
     
     
-    board = instances.board_3x20
+    board = instances.board_5x12
     pents = instances.petnominos
     app = Application(40)
     app.execute(board, pents)
