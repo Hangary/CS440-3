@@ -258,14 +258,20 @@ class ultimateTicTacToe:
         score(float): estimated utility score for maxPlayer or minPlayer
         """
         score = 0
+        my_win = 0
+        op_win = 0
         for x in self.globalIdx:
             row, column = x
             s= self.Designed_scoreOneBoard(row, column)
             score += s
             if score <= -10000:
-                return -10000
+                my_win = 1
             if score >= 10000:
-                return 10000
+                op_win = 1
+        if op_win:
+            return 10000
+        if my_win:
+            return -10000
         if score == 0:
             for x in self.globalIdx:
                 row, column = x
