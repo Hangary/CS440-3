@@ -23,7 +23,7 @@ class ultimateTicTacToe:
         self.globalIdx=[(0,0),(0,3),(0,6),(3,0),(3,3),(3,6),(6,0),(6,3),(6,6)]
 
         #Start local board index for reflex agent playing
-        self.startBoardIdx=8
+        self.startBoardIdx=4
         #self.startBoardIdx=randint(0,8)
 
         #utility value for reflex offensive and reflex defensive agents
@@ -658,7 +658,7 @@ class ultimateTicTacToe:
 if __name__=="__main__":
     uttt=ultimateTicTacToe()
     #gameBoards, bestMove, bestValue, winner=uttt.playGameReflexAgent()
-    gameBoards, bestMove, expandedNodes, bestValue, winner=uttt.playGamePredifinedAgent(0,0,0)
+    gameBoards, bestMove, expandedNodes, bestValue, winner=uttt.playGamePredifinedAgent(1,1,1)
     print(bestMove)
     print(expandedNodes)
     #print(bestValue)
