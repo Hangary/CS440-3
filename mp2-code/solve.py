@@ -22,9 +22,10 @@ def solve(board, pents, app = None):
 
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
-            coordinate = (y,x)
-            cor_pent_dict[coordinate] = list()
-            coor_remain.add(coordinate)
+            if board[y][x] != 0:        # regrade
+                coordinate = (y,x)
+                cor_pent_dict[coordinate] = list()
+                coor_remain.add(coordinate)
     
     all_pents = dict()
     for p in pents:
