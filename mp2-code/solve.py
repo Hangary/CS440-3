@@ -22,7 +22,7 @@ def solve(board, pents, app = None):
 
     for y in range(board.shape[0]):
         for x in range(board.shape[1]):
-            if board[y][x] != 0:        # regrade
+            if board[y][x] != 0:        # the line needed for regrade
                 coordinate = (y,x)
                 cor_pent_dict[coordinate] = list()
                 coor_remain.add(coordinate)
