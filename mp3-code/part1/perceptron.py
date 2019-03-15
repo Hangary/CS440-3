@@ -28,7 +28,19 @@ class MultiClassPerceptron(object):
 		"""
 
 		# YOUR CODE HERE
-		pass
+		model = self.w
+		model[model.shape[0] - 1] = 1		# initialize bias as 1
+		eta = 1
+
+		for i in range(train_set.shape[0]):
+			label = train_label[i]
+			f_and_bias = np.append(train_set[i], 1)
+
+			result = model.T @ f_and_bias
+			max_index = np.argmax(result)
+			if label != max_index:
+				model.T[label] += eta * f_and_bias
+				model.T[max_index] -= eta * f_and_bias
 
 	def test(self,test_set,test_label):
 		""" Test the trained perceptron model (self.w) using testing dataset. 
@@ -48,8 +60,19 @@ class MultiClassPerceptron(object):
 		accuracy = 0 
 		pred_label = np.zeros((len(test_set)))
 
-		pass
-		
+		model = self.w
+
+		for i in range(test_set.shape[0]):
+			label = test_label[i]
+			f_and_bias = np.append(test_set[i], 1)
+
+			result = model.T @ f_and_bias
+			max_index = np.argmax(result)
+			pred_label[i] = max_index
+			if label == max_index:
+				accuracy += 1
+
+		accuracy = accuracy / len(test_set)
 		return accuracy, pred_label
 
 	def save_model(self, weight_file):
