@@ -24,6 +24,7 @@ class NaiveBayes(object):
 
         self.prior = np.zeros((num_class))
         self.likelihood = np.zeros((feature_dim, num_value, num_class))
+        self.k = 1
 
     def train(self, train_set, train_label):
         """ Train naive bayes model (self.prior and self.likelihood) with training dataset.
@@ -36,23 +37,39 @@ class NaiveBayes(object):
             train_set(numpy.ndarray): training examples with a dimension of (# of examples, feature_dim)
             train_label(numpy.ndarray): training labels with a dimension of (# of examples, )
         """
-        prior_list = np.zeros(self.num_class)
-        likelihood_list = np.zeros((self.feature_dim, self.num_value, self.num_class))
-
-        for example in range(len(train_label)):
-            cur_label = train_label[example]
-            prior_list[cur_label] += 1
-            for feature in range(self.feature_dim):
-                cur_feature = train_set[example][feature]
-                likelihood_list[feature][cur_feature][cur_label] += 1
-
-        self.prior = prior_list / self.num_class;
-
-        for classes, count in enumerate(prior_list):
-            self.likelihood = likelihood_list[:][:][classes] / count
-
         # YOUR CODE HERE
-        pass
+        print("train start")
+        # prior_list = np.zeros(self.num_class)
+        # likelihood_list = np.zeros((self.feature_dim, self.num_value, self.num_class))
+        #
+        # for example in range(len(train_label)):
+        #     cur_label = train_label[example]
+        #     prior_list[cur_label] += 1
+        #     for feature in range(self.feature_dim):
+        #         cur_feature = train_set[example][feature]
+        #         likelihood_list[feature][cur_feature][cur_label] += 1
+        #
+        # self.prior = prior_list / self.num_class
+        #
+        # for classes, count in enumerate(prior_list):
+        #     self.likelihood[:][:][classes] = (likelihood_list[:][:][classes] + self.k) / (count + self.k * 256)
+
+        num_example = train_set.shape[0]
+        # calculate prior
+        for label in range(self.num_class):
+            self.prior[label] = np.sum(train_label == label) / len(train_label)
+        counter = np.ones((self.feature_dim, self.num_value, self.num_class)) * self.k
+        for idx in range(num_example):
+            c = train_label[idx]
+            for i, feat in enumerate(train_set[idx, :]):
+                counter[i, feat, c] += 1
+        for c in range(self.num_class):
+            for i in range(self.feature_dim):
+                self.likelihood[i, :, c] = counter[i, :, c] / np.sum(counter[i, :, c])
+
+        print("train finish")
+
+
 
     def test(self, test_set, test_label):
         """ Test the trained naive bayes model (self.prior and self.likelihood) on testing dataset,
@@ -71,12 +88,22 @@ class NaiveBayes(object):
 
         # YOUR CODE HERE
 
-        accuracy = 0
+        # accuracy = 0
+        print("test start")
         pred_label = np.zeros((len(test_set)))
+        for idx in range(len(test_set)):
+            pred_label[idx] = self.predict(test_set[idx, :])
+        accuracy = np.sum(pred_label == test_label) / len(test_label)
 
-        pass
-
+        print("test finish")
         return accuracy, pred_label
+
+    def predict(self, test):
+        log_probs = np.log(self.prior)
+        for label in range(self.num_class):
+            for feature in range(self.feature_dim):
+                log_probs[label] += np.log(self.likelihood[feature, test[feature], label])
+        return np.argmax(log_probs)
 
     def save_model(self, prior, likelihood):
         """ Save the trained model parameters
@@ -109,5 +136,10 @@ class NaiveBayes(object):
         # YOUR CODE HERE
 
         feature_likelihoods = np.zeros((likelihood.shape[0], likelihood.shape[2]))
-
+        for feature in range(self.feature_dim):
+            for label in range(self.num_class):
+                vals_prob = likelihood[feature, :, label]
+                prob_sum = np.argsort(vals_prob)[-128:]
+                feature_likelihoods[feature][label] = np.sum(vals_prob[prob_sum])
         return feature_likelihoods
+
