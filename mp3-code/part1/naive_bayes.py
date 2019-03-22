@@ -81,17 +81,13 @@ class NaiveBayes(object):
 
         for i in range(len(test_set)):
             ex_feature = test_set[i]
-            ex_label = test_label[i]
             possibities = np.log(prior)
             for c in range(num_class):
                 possibities[c] += sum([np.log(likelihood[i][v][c]) for i, v in enumerate(ex_feature)])
             
             pred_label[i] = np.argmax(possibities)
-            
-            if pred_label[i] == ex_label:
-                accuracy += 1
         
-        accuracy = accuracy / len(test_set)
+        accuracy = np.sum(pred_label == test_label) / len(test_set)
 
         print("test complete")
         return accuracy, pred_label
@@ -131,5 +127,8 @@ class NaiveBayes(object):
 
         for d in range(likelihood.shape[0]):
             for c in range(likelihood.shape[2]):
-                feature_likelihoods[d][c] = sum([likelihood[d][v][c] for v in range(128,256)])
+                # feature_likelihoods[d][c] = sum([likelihood[d][v][c] for v in range(128,256)])
+                vals_prob = likelihood[d, :, c]
+                prob_sort = np.argsort(vals_prob)
+                feature_likelihoods[d][c] = np.sum(vals_prob[prob_sort][128:])
         return feature_likelihoods
