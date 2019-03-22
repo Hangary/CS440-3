@@ -39,33 +39,19 @@ class NaiveBayes(object):
         """
         # YOUR CODE HERE
         print("train start")
-        # prior_list = np.zeros(self.num_class)
-        # likelihood_list = np.zeros((self.feature_dim, self.num_value, self.num_class))
-        #
-        # for example in range(len(train_label)):
-        #     cur_label = train_label[example]
-        #     prior_list[cur_label] += 1
-        #     for feature in range(self.feature_dim):
-        #         cur_feature = train_set[example][feature]
-        #         likelihood_list[feature][cur_feature][cur_label] += 1
-        #
-        # self.prior = prior_list / self.num_class
-        #
-        # for classes, count in enumerate(prior_list):
-        #     self.likelihood[:][:][classes] = (likelihood_list[:][:][classes] + self.k) / (count + self.k * 256)
 
-        num_example = train_set.shape[0]
-        # calculate prior
         for label in range(self.num_class):
             self.prior[label] = np.sum(train_label == label) / len(train_label)
-        counter = np.ones((self.feature_dim, self.num_value, self.num_class)) * self.k
-        for idx in range(num_example):
-            c = train_label[idx]
+        counter = np.zeros((self.feature_dim, self.num_value, self.num_class)) + self.k
+
+        num_train_example = train_set.shape[0]
+        for idx in range(num_train_example):
+            label = train_label[idx]
             for i, feat in enumerate(train_set[idx, :]):
-                counter[i, feat, c] += 1
-        for c in range(self.num_class):
-            for i in range(self.feature_dim):
-                self.likelihood[i, :, c] = counter[i, :, c] / np.sum(counter[i, :, c])
+                counter[i, feat, label] += 1
+        for label in range(self.num_class):
+            for feature in range(self.feature_dim):
+                self.likelihood[feature, :, label] = counter[feature, :, label] / np.sum(counter[feature, :, label])
 
         print("train finish")
 
