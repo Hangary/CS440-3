@@ -79,13 +79,14 @@ class NaiveBayes(object):
         likelihood = self.likelihood
         feature_dim = self.feature_dim
 
-        for i in range(len(test_set)):
-            ex_feature = test_set[i]
-            possibities = np.log(prior)
-            for c in range(num_class):
-                possibities[c] += sum([np.log(likelihood[i][v][c]) for i, v in enumerate(ex_feature)])
-            
-            pred_label[i] = np.argmax(possibities)
+        for t in range(len(test_set)):
+            ex_feature = test_set[t]
+            possibities = np.zeros(len(prior))
+            possibities += np.log(prior)
+            for i, v in enumerate(ex_feature):
+                possibities += np.log(likelihood[i][v])
+ 
+            pred_label[t] = np.argmax(possibities)
         
         accuracy = np.sum(pred_label == test_label) / len(test_set)
 
@@ -127,8 +128,8 @@ class NaiveBayes(object):
 
         for d in range(likelihood.shape[0]):
             for c in range(likelihood.shape[2]):
-                # feature_likelihoods[d][c] = sum([likelihood[d][v][c] for v in range(128,256)])
-                vals_prob = likelihood[d, :, c]
-                prob_sort = np.argsort(vals_prob)
-                feature_likelihoods[d][c] = np.sum(vals_prob[prob_sort][128:])
+                feature_likelihoods[d][c] = sum([likelihood[d][v][c] for v in range(128,256)])
+                # vals_prob = likelihood[d, :, c]
+                # prob_sort = np.argsort(vals_prob)
+                # feature_likelihoods[d][c] = np.sum(vals_prob[prob_sort][128:])
         return feature_likelihoods
