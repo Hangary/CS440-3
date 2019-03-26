@@ -35,11 +35,11 @@ class MultiClassPerceptron(object):
 		epoch = 100
 		decay = self.learning_rate/epoch
 		for iteration in range(epoch):
-			predict_matrix = np.matmul(train_set_b,self.w)
+			#predict_matrix = np.matmul(train_set_b,self.w)
 			for i in range(num_train):
 				f = train_set_b[i,:]
-				#predict_label = np.argmax(np.matmul(f,self.w))
-				predict_label = np.argmax(predict_matrix[i,:])
+				predict_label = np.argmax(np.matmul(f.T,self.w))
+				#predict_label = np.argmax(predict_matrix[i,:])
 				true_label = train_label[i]
 				if predict_label != true_label:
 					self.w[:,true_label] += self.learning_rate * f
