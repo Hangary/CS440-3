@@ -52,9 +52,12 @@ class NaiveBayes(object):
 
         likelihood += K
         for c in range(num_class):
-             likelihood = likelihood / (prior[c] + K * 256)
+             likelihood[:,:,c] = likelihood[:,:,c] / (prior[c] + K * 256)
 
         prior  = prior / num_examples
+
+        self.likelihood = np.log(likelihood)
+        self.prior = np.log(prior)
 
     def test(self,test_set,test_label):
         """ Test the trained naive bayes model (self.prior and self.likelihood) on testing dataset,
@@ -74,23 +77,22 @@ class NaiveBayes(object):
         accuracy = 0
         pred_label = np.zeros((len(test_set)))
 
-        num_class = self.num_class
         prior = self.prior
         likelihood = self.likelihood
-        feature_dim = self.feature_dim
 
         for t in range(len(test_set)):
             ex_feature = test_set[t]
             possibities = np.zeros(len(prior))
-            possibities += np.log(prior)
+            possibities += prior
             for i, v in enumerate(ex_feature):
-                possibities += np.log(likelihood[i][v])
+                possibities += likelihood[i][v]
  
             pred_label[t] = np.argmax(possibities)
         
         accuracy = np.sum(pred_label == test_label) / len(test_set)
 
         print("test complete")
+        print(accuracy)
         return accuracy, pred_label
 
 
