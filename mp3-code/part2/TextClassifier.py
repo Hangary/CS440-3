@@ -7,6 +7,8 @@
 #
 # Created by Dhruv Agarwal (dhruva2@illinois.edu) on 02/21/2019
 
+import math
+
 """
 You should only modify code within this file -- the unrevised staff files will be used for all other
 files and classes when code is run, so be careful to not modify anything else.
@@ -20,6 +22,13 @@ class TextClassifier(object):
         """
         self.lambda_mixture = 0.0
 
+        self.K = 1
+        self.model = dict()
+        self.prior = dict()
+        for i in range(14):
+            self.model[i] = dict()
+            self.prior[i] = 0
+
     def fit(self, train_set, train_label):
         """
         :param train_set - List of list of words corresponding with each text
@@ -32,7 +41,24 @@ class TextClassifier(object):
         """
 
         # TODO: Write your code here
-        pass
+
+        class_words_sum = [0] * 14
+
+        for i, v in enumerate(train_set):
+            class_num = train_label[i] - 1
+            self.prior[class_num] += 1
+            class_words_sum[class_num] += len(v)
+            for word in v:
+                if word not in self.model[class_num].keys():
+                    self.model[class_num][word] = 0
+                self.model[class_num][word] += 1
+
+        for c in range(14):
+            self.prior[c] = math.log((self.prior[c]) / (len(train_label)))
+            for w in self.model[c].keys():
+                self.model[c][w] = math.log((self.model[c][w] + self.K) / (class_words_sum[c] + self.K * len(self.model[c])))
+
+        # print(self.model)      
 
     def predict(self, x_set, dev_label,lambda_mix=0.0):
         """
@@ -50,7 +76,22 @@ class TextClassifier(object):
         result = []
 
         # TODO: Write your code here
-        pass
+        for i, v in enumerate(x_set):
+            label = dev_label[i]
+            predict = []
+            for c in range(14):
+                sum = self.prior[c]
+                for word in v:
+                    if word in self.model[c].keys():
+                        sum += self.model[c][word]
+                predict.append(sum)
+            max_value = max(predict)
+            predict_class = predict.index(max_value) + 1
+            result.append(predict_class)
 
+            if predict_class == label:
+                accuracy += 1
+        
+        accuracy = accuracy / len(dev_label)
         return accuracy,result
 
