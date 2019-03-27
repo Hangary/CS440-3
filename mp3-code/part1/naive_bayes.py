@@ -91,8 +91,7 @@ class NaiveBayes(object):
         
         accuracy = np.sum(pred_label == test_label) / len(test_set)
 
-        print("test complete")
-        print(accuracy)
+        print("accuracy: ", accuracy)
         return accuracy, pred_label
 
 
