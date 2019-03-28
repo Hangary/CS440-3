@@ -10,6 +10,8 @@
 import math
 import heapq
 
+import numpy as np
+
 """
 You should only modify code within this file -- the unrevised staff files will be used for all other
 files and classes when code is run, so be careful to not modify anything else.
@@ -27,6 +29,8 @@ class TextClassifier(object):
         self.model = dict()
         self.prior = dict()
         self.class_words_sum = dict()
+        self.unique_words = set()
+
         for i in range(1,15):
             self.model[i] = dict()
             self.prior[i] = 0
@@ -50,6 +54,7 @@ class TextClassifier(object):
             self.prior[class_num] += 1
             self.class_words_sum[class_num] += len(v)
             for word in v:
+                self.unique_words.add(word)
                 if word not in self.model[class_num].keys():
                     self.model[class_num][word] = 1
                 else:
@@ -58,16 +63,21 @@ class TextClassifier(object):
         top20 = dict()
         for c in range(1,15):
             words = []
-            self.prior[c] = math.log((self.prior[c]) / (len(train_label)))
+            temp_prior = (self.prior[c]) / (len(train_label))
+            if temp_prior == 0:
+                self.prior[c] = float('-inf')
+            else:
+                self.prior[c] = math.log(temp_prior)
+            
             for w in self.model[c].keys():
                 heapq.heappush(words, (-self.model[c][w], w))
-                self.model[c][w] = math.log((self.model[c][w] + self.K) / (self.class_words_sum[c] + self.K * len(self.model[c])))
+                self.model[c][w] = math.log((self.model[c][w] + self.K) / (self.class_words_sum[c] + self.K * len(self.unique_words)))
             top20[c] = [heapq.heappop(words) for i in range(20)]
         
         for c in top20.keys():
             print("class ", c, " :")
             for pair in top20[c]:
-                print(pair[1])
+                print(pair)
             print("##########################")
 
     def predict(self, x_set, dev_label,lambda_mix=0.0):
@@ -85,27 +95,35 @@ class TextClassifier(object):
         accuracy = 0.0
         result = []
 
+        confusion_matrix = np.zeros((14,14))
+
         # TODO: Write your code here
         for i, v in enumerate(x_set):
             label = dev_label[i]
             predict = []
             for c in range(1,15):
-                sum = self.prior[c]
+                sum = 0
+                sum += self.prior[c]
                 for w in v:
-                    if w in self.model[c].keys():
-                        sum += self.model[c][w]
-                    else:
-                        sum += math.log((self.K) / (self.class_words_sum[c] + self.K * len(self.model[c])))
+                    if w in self.unique_words:
+                        if w in self.model[c].keys():
+                            sum += self.model[c][w]
+                        else:
+                            sum += math.log((self.K) / (self.class_words_sum[c] + self.K * len(self.unique_words)))
 
                 predict.append(sum)
             max_value = max(predict)
             predict_class = predict.index(max_value) + 1
 
+            confusion_matrix[label - 1][predict_class - 1] += 1
             result.append(predict_class)
 
             if predict_class == label:
                 accuracy += 1
         
+        for i in range(14):
+            confusion_matrix[i] = np.around(confusion_matrix[i] / np.sum(confusion_matrix[i]), decimals=2)
+        print(confusion_matrix)
         accuracy = accuracy / len(dev_label)
         return accuracy,result
 
