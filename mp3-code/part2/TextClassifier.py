@@ -8,6 +8,7 @@
 # Created by Dhruv Agarwal (dhruva2@illinois.edu) on 02/21/2019
 
 import math
+import heapq
 
 """
 You should only modify code within this file -- the unrevised staff files will be used for all other
@@ -22,7 +23,7 @@ class TextClassifier(object):
         """
         self.lambda_mixture = 0.0
 
-        self.K = 0.1
+        self.K = 1
         self.model = dict()
         self.prior = dict()
         self.class_words_sum = dict()
@@ -50,13 +51,24 @@ class TextClassifier(object):
             self.class_words_sum[class_num] += len(v)
             for word in v:
                 if word not in self.model[class_num].keys():
-                    self.model[class_num][word] = 0
-                self.model[class_num][word] += 1
+                    self.model[class_num][word] = 1
+                else:
+                    self.model[class_num][word] += 1
 
+        top20 = dict()
         for c in range(1,15):
+            words = []
             self.prior[c] = math.log((self.prior[c]) / (len(train_label)))
             for w in self.model[c].keys():
-                self.model[c][w] = math.log((self.model[c][w] + self.K) / (self.class_words_sum[c] + self.K * len(self.model[c])))   
+                heapq.heappush(words, (-self.model[c][w], w))
+                self.model[c][w] = math.log((self.model[c][w] + self.K) / (self.class_words_sum[c] + self.K * len(self.model[c])))
+            top20[c] = [heapq.heappop(words) for i in range(20)]
+        
+        for c in top20.keys():
+            print("class ", c, " :")
+            for pair in top20[c]:
+                print(pair[1])
+            print("##########################")
 
     def predict(self, x_set, dev_label,lambda_mix=0.0):
         """
@@ -88,8 +100,6 @@ class TextClassifier(object):
                 predict.append(sum)
             max_value = max(predict)
             predict_class = predict.index(max_value) + 1
-
-            print("max: ", max_value, predict_class)
 
             result.append(predict_class)
 
