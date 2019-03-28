@@ -22,12 +22,14 @@ class TextClassifier(object):
         """
         self.lambda_mixture = 0.0
 
-        self.K = 1
+        self.K = 0.1
         self.model = dict()
         self.prior = dict()
-        for i in range(14):
+        self.class_words_sum = dict()
+        for i in range(1,15):
             self.model[i] = dict()
             self.prior[i] = 0
+            self.class_words_sum[i] = 0
 
     def fit(self, train_set, train_label):
         """
@@ -42,23 +44,19 @@ class TextClassifier(object):
 
         # TODO: Write your code here
 
-        class_words_sum = [0] * 14
-
         for i, v in enumerate(train_set):
-            class_num = train_label[i] - 1
+            class_num = train_label[i]
             self.prior[class_num] += 1
-            class_words_sum[class_num] += len(v)
+            self.class_words_sum[class_num] += len(v)
             for word in v:
                 if word not in self.model[class_num].keys():
                     self.model[class_num][word] = 0
                 self.model[class_num][word] += 1
 
-        for c in range(14):
+        for c in range(1,15):
             self.prior[c] = math.log((self.prior[c]) / (len(train_label)))
             for w in self.model[c].keys():
-                self.model[c][w] = math.log((self.model[c][w] + self.K) / (class_words_sum[c] + self.K * len(self.model[c])))
-
-        # print(self.model)      
+                self.model[c][w] = math.log((self.model[c][w] + self.K) / (self.class_words_sum[c] + self.K * len(self.model[c])))   
 
     def predict(self, x_set, dev_label,lambda_mix=0.0):
         """
@@ -79,14 +77,20 @@ class TextClassifier(object):
         for i, v in enumerate(x_set):
             label = dev_label[i]
             predict = []
-            for c in range(14):
+            for c in range(1,15):
                 sum = self.prior[c]
-                for word in v:
-                    if word in self.model[c].keys():
-                        sum += self.model[c][word]
+                for w in v:
+                    if w in self.model[c].keys():
+                        sum += self.model[c][w]
+                    else:
+                        sum += math.log((self.K) / (self.class_words_sum[c] + self.K * len(self.model[c])))
+
                 predict.append(sum)
             max_value = max(predict)
             predict_class = predict.index(max_value) + 1
+
+            print("max: ", max_value, predict_class)
+
             result.append(predict_class)
 
             if predict_class == label:
