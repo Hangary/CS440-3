@@ -49,7 +49,7 @@ class TextClassifier(object):
             self.prior[c] = math.log2((self.prior[c]) / (len(train_label)))
             for w in self.model[c].keys():
                 heapq.heappush(words, (-self.model[c][w], w))
-                self.model[c][w] = math.log2((self.model[c][w] + self.K) / (self.class_words_sum[c] + self.K * len(self.s)))
+                self.model[c][w] = math.log2((self.model[c][w]) / (self.class_words_sum[c]))
             top20[c] = [heapq.heappop(words) for i in range(20)]
         
         for c in top20.keys():
