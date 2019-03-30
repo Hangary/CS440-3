@@ -11,6 +11,7 @@ import math
 import heapq
 
 import numpy as np
+from image_main import plot_confusion_matrix
 
 """
 You should only modify code within this file -- the unrevised staff files will be used for all other
@@ -61,6 +62,7 @@ class TextClassifier(object):
                     self.model[class_num][word] += 1
 
         top20 = dict()
+
         for c in range(1,15):
             words = []
             temp_prior = (self.prior[c]) / (len(train_label))
@@ -70,15 +72,19 @@ class TextClassifier(object):
                 self.prior[c] = math.log(temp_prior)
             
             for w in self.model[c].keys():
+
                 heapq.heappush(words, (-self.model[c][w], w))
+
                 self.model[c][w] = math.log((self.model[c][w] + self.K) / (self.class_words_sum[c] + self.K * len(self.unique_words)))
-            top20[c] = [heapq.heappop(words) for i in range(20)]
+                
+        #     top20[c] = [heapq.heappop(words) for i in range(20)]
         
-        for c in top20.keys():
-            print("class ", c, " :")
-            for pair in top20[c]:
-                print(pair)
-            print("##########################")
+        # for c in top20.keys():
+        #     print("class ", c, " :")
+        #     for pair in top20[c]:
+        #         print(pair)
+        #     print("##########################")
+        print("unique words", len(self.unique_words))
 
     def predict(self, x_set, dev_label,lambda_mix=0.0):
         """
@@ -102,8 +108,8 @@ class TextClassifier(object):
             label = dev_label[i]
             predict = []
             for c in range(1,15):
-                sum = 0
-                sum += self.prior[c]
+                sum = self.prior[c]
+                # sum = 1/14
                 for w in v:
                     if w in self.unique_words:
                         if w in self.model[c].keys():
@@ -120,10 +126,15 @@ class TextClassifier(object):
 
             if predict_class == label:
                 accuracy += 1
+
+        accuracy = accuracy / len(dev_label)
         
         for i in range(14):
             confusion_matrix[i] = np.around(confusion_matrix[i] / np.sum(confusion_matrix[i]), decimals=2)
         print(confusion_matrix)
-        accuracy = accuracy / len(dev_label)
-        return accuracy,result
 
+        plot_confusion_matrix(dev_label, result, classes=np.array([i for i in range(15)]), normalize=True,
+                    title='Confusion matrix, with normalization')
+        
+
+        return accuracy,result
