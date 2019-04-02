@@ -8,10 +8,11 @@
 # Created by Dhruv Agarwal (dhruva2@illinois.edu) on 02/21/2019
 
 import math
-import heapq
+# import heapq  # used for top20
 
-import numpy as np
-from image_main import plot_confusion_matrix
+# used for plotting confusion matrix
+# import numpy as np
+# from image_main import plot_confusion_matrix
 
 """
 You should only modify code within this file -- the unrevised staff files will be used for all other
@@ -61,10 +62,10 @@ class TextClassifier(object):
                 else:
                     self.model[class_num][word] += 1
 
-        top20 = dict()
+        # top20 = dict()    # used for top20
 
         for c in range(1,15):
-            words = []
+            # words = []    # used for top20
             temp_prior = (self.prior[c]) / (len(train_label))
             if temp_prior == 0:
                 self.prior[c] = float('-inf')
@@ -73,7 +74,7 @@ class TextClassifier(object):
             
             for w in self.model[c].keys():
 
-                heapq.heappush(words, (-self.model[c][w], w))
+                # heapq.heappush(words, (-self.model[c][w], w)) # used for top20
 
                 self.model[c][w] = math.log((self.model[c][w] + self.K) / (self.class_words_sum[c] + self.K * len(self.unique_words)))
                 
@@ -84,7 +85,6 @@ class TextClassifier(object):
         #     for pair in top20[c]:
         #         print(pair)
         #     print("##########################")
-        print("unique words", len(self.unique_words))
 
     def predict(self, x_set, dev_label,lambda_mix=0.0):
         """
@@ -101,7 +101,7 @@ class TextClassifier(object):
         accuracy = 0.0
         result = []
 
-        confusion_matrix = np.zeros((14,14))
+        # confusion_matrix = np.zeros((14,14))  # used for plotting confusion matrix
 
         # TODO: Write your code here
         for i, v in enumerate(x_set):
@@ -121,20 +121,20 @@ class TextClassifier(object):
             max_value = max(predict)
             predict_class = predict.index(max_value) + 1
 
-            confusion_matrix[label - 1][predict_class - 1] += 1
+            # confusion_matrix[label - 1][predict_class - 1] += 1   # used for plotting confusion matrix
             result.append(predict_class)
 
             if predict_class == label:
                 accuracy += 1
 
         accuracy = accuracy / len(dev_label)
-        
-        for i in range(14):
-            confusion_matrix[i] = np.around(confusion_matrix[i] / np.sum(confusion_matrix[i]), decimals=2)
-        print(confusion_matrix)
 
-        plot_confusion_matrix(dev_label, result, classes=np.array([i for i in range(15)]), normalize=True,
-                    title='Confusion matrix, with normalization')
-        
+        # used for plotting confusion matrix
+        # for i in range(14):
+        #     confusion_matrix[i] = np.around(confusion_matrix[i] / np.sum(confusion_matrix[i]), decimals=2)
+        # print(confusion_matrix)
+
+        # plot_confusion_matrix(dev_label, result, classes=np.array([i for i in range(15)]), normalize=True,
+        #             title='Confusion matrix, with normalization')
 
         return accuracy,result

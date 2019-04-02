@@ -73,7 +73,7 @@ class MultiClassPerceptron(object):
 				accuracy += 1
 
 		accuracy = accuracy / len(test_set)
-		print("accuracy: ", accuracy)
+		# print("accuracy: ", accuracy)
 		return accuracy, pred_label
 
 	def save_model(self, weight_file):

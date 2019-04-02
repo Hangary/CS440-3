@@ -91,7 +91,7 @@ class NaiveBayes(object):
         
         accuracy = np.sum(pred_label == test_label) / len(test_set)
 
-        print("accuracy: ", accuracy)
+        # print("accuracy: ", accuracy)
         return accuracy, pred_label
 
 
@@ -130,7 +130,4 @@ class NaiveBayes(object):
         for d in range(likelihood.shape[0]):
             for c in range(likelihood.shape[2]):
                 feature_likelihoods[d][c] = sum([likelihood[d][v][c] for v in range(128,256)])
-                # vals_prob = likelihood[d, :, c]
-                # prob_sort = np.argsort(vals_prob)
-                # feature_likelihoods[d][c] = np.sum(vals_prob[prob_sort][128:])
         return feature_likelihoods
