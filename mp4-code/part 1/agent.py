@@ -42,6 +42,7 @@ class Agent:
         self.points = 0
         self.s = None
         self.a = None
+        self.begin = False
 
     def act(self, state, points, dead):
         '''
@@ -58,6 +59,10 @@ class Agent:
         '''
         if state[0] == 520 and state[1] == 480:
             print("stop")
+        
+        if dead:
+            self.reset()
+            return 0
 
         # training
         if self.train:
@@ -81,12 +86,12 @@ class Agent:
                     max_v = self.Q[cur_s][i]
                     cur_a = i 
 
-            print("x,y", state[0], state[1])
-            print("Q: ", self.Q[self.s][self.a])
-            print("All_Q: ", self.Q[self.s])
-            print("N: ",self.N[self.s][self.a])
-            print("Points: ", points)
-            print("##############")
+            # print("x,y", state[0], state[1])
+            # print("Q: ", self.Q[self.s][self.a])
+            # print("All_Q: ", self.Q[self.s])
+            # print("N: ",self.N[self.s][self.a])
+            # print("Points: ", points)
+            # print("##############")
 
             self.N[cur_s][cur_a] += 1
 
@@ -95,7 +100,6 @@ class Agent:
 
             self.begin = True
 
-            # print(self.N)
             return cur_a       
         # testing
         else:
