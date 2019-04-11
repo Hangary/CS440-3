@@ -57,21 +57,18 @@ class Agent:
         (Note that [adjoining_wall_x=0, adjoining_wall_y=0] is also the case when snake runs out of the 480x480 board)
 
         '''
-        if state[0] == 520 and state[1] == 480:
-            print("stop")
-        
-        if dead:
-            self.reset()
-            return 0
+        # if dead:
+        #     self.reset()
+        #     return 0
 
         # training
-        if self.train:
+        if self._train:
             # updating
             if self.begin:
                 cur_s = self.state_index(state)
                 last_Q_value = self.Q[self.s][self.a]
                 update_value = last_Q_value + self.alpha() * (self.reward(points, dead) + self.gamma * max(self.Q[cur_s])  - last_Q_value)
-                self.Q[self.s][self.a] = round(update_value, 2) # update Q-table!
+                self.Q[self.s][self.a] = update_value # update Q-table!
 
             # action
             max_v = -float("inf")
@@ -100,10 +97,14 @@ class Agent:
 
             self.begin = True
 
+            if dead:
+                self.reset()
+
             return cur_a       
         # testing
         else:
             cur_s = self.state_index(state)
+            # print(self.Q[cur_s])
             real_a = 0
             max_v = -float("inf")
             for i in range (3, -1, -1):
