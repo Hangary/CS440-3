@@ -16,9 +16,11 @@ class Agent:
         self.N = utils.create_q_table()
 
         #last state
-        self.s
+        self.s = None
         #last action
-        self.a
+        self.a = None
+        #points
+        self.points = 0
 
     def train(self):
         self._train = True
@@ -55,9 +57,9 @@ class Agent:
         # training
         if self.train:
             # updating
-            cur_s = state_index(state)
+            cur_s = self.state_index(state)
             last_Q_value = self.Q[self.s][self.a]
-            update_value = last_Q_value + alpha(self) * (reward(self, dead) + self.gamma * max(self.Q[cur_s])  - last_Q_value)
+            update_value = last_Q_value + self.alpha() * (self.reward(points, dead) + self.gamma * max(self.Q[cur_s])  - last_Q_value)
             self.Q[self.s][self.a] = update_value # update Q-table!
 
             # action
@@ -69,25 +71,39 @@ class Agent:
                     break
 
                 if self.Q[cur_s][i] > max_v:
-                    max_v = v
+                    max_v = self.Q[cur_s][i]
                     cur_a = i 
+
+            self.N[cur_s][cur_a] += 1
+
             self.s = cur_s
-            self.a = cur_a       
+            self.a = cur_a
+
+            return cur_a       
         # testing
         else:
+            cur_s = self.state_index(state)
+            real_a = 0
+            max_v = -float("inf")
+            for i in range (3, -1, -1):
+                if self.Q[cur_s][i] > max_v:
+                    max_v = self.Q[cur_s][i]
+                    real_a = i 
+            return real_a
     
     def alpha(self):
         return self.C/(self.C+self.N[self.s][self.a])
 
-    def reward(self, dead):
+    def reward(self, points, dead):
         if dead:
             return -1
-        elif self.state[0] == self.state[3] and self.state[1] == self.state[4]:  # snake eats food
+        elif points - self.points > 0:
+            self.points = points
             return 1
         else:
             return -0.1
 
-    def state_index(state):
+    def state_index(self, state):
         adjoining_wall_x = 0
         adjoining_wall_y = 0
         food_dir_x = 0
@@ -97,34 +113,40 @@ class Agent:
         adjoining_body_left = 0
         adjoining_body_right = 0
 
-        if state.snake_head_x == 40:
+        snake_head_x = state[0]
+        snake_head_y = state[1]
+        snake_body = state[2]
+        food_x = state[3]
+        food_y = state[4]
+
+        if snake_head_x == 40:
             adjoining_wall_x = 1
-        elif state.snake_head_x == 520:
+        elif snake_head_x == 480:
             adjoining_wall_x = 2
         
-        if state.snake_head_y == 40:
+        if snake_head_y == 40:
             adjoining_wall_y = 1
-        elif state.snake_head_y == 520:
+        elif snake_head_y == 480:
             adjoining_wall_y = 2
         
-        if state.food_x < state.snake_head_x:
+        if food_x < snake_head_x:
             food_dir_x = 1
-        elif state.food_x > state.snake_head_x:
+        elif food_x > snake_head_x:
             food_dir_x = 2
 
-        if state.food_y < state.snake_head_y:
+        if food_y < snake_head_y:
             food_dir_y = 1
-        elif state.food_y > state.snake_head_y:
+        elif food_y > snake_head_y:
             food_dir_y = 2
 
-        for x,y in state.snake_body:
-            if state.snake_head_x == x + 40:
+        for x,y in snake_body:
+            if snake_head_x == x + 40:
                 adjoining_body_left = 1
-            if state.snake_head_x == x - 40:
+            if snake_head_x == x - 40:
                 adjoining_body_right = 1
-            if state.snake_head_y == y - 40:
+            if snake_head_y == y - 40:
                 adjoining_body_top = 1
-            if state.snake_head_y == y + 40:
+            if snake_head_y == y + 40:
                 adjoining_body_bottom = 1
         
         return (adjoining_wall_x, adjoining_wall_y, food_dir_x, food_dir_y, adjoining_body_top, 
