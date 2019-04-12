@@ -57,24 +57,25 @@ class Agent:
         (Note that [adjoining_wall_x=0, adjoining_wall_y=0] is also the case when snake runs out of the 480x480 board)
 
         '''
-        # if dead:
-        #     self.reset()
-        #     return 0
-
         # training
         if self._train:
+            cur_s = self.state_index(state)
+
             # updating
             if self.begin:
-                cur_s = self.state_index(state)
                 last_Q_value = self.Q[self.s][self.a]
                 update_value = last_Q_value + self.alpha() * (self.reward(points, dead) + self.gamma * max(self.Q[cur_s])  - last_Q_value)
                 self.Q[self.s][self.a] = update_value # update Q-table!
+            
+            # stop the game if dead
+            if dead:
+                self.reset()
+                return 0
 
             # action
             max_v = -float("inf")
-            cur_s = self.state_index(state)
             cur_a = 0
-            for i in range (3, -1, -1):
+            for i in range(3, -1, -1):
                 if self.N[cur_s][i] < self.Ne:
                     cur_a = i
                     break
@@ -97,9 +98,6 @@ class Agent:
 
             self.begin = True
 
-            if dead:
-                self.reset()
-
             return cur_a       
         # testing
         else:
@@ -107,7 +105,7 @@ class Agent:
             # print(self.Q[cur_s])
             real_a = 0
             max_v = -float("inf")
-            for i in range (3, -1, -1):
+            for i in range(3, -1, -1):
                 if self.Q[cur_s][i] > max_v:
                     max_v = self.Q[cur_s][i]
                     real_a = i 
@@ -168,10 +166,10 @@ class Agent:
             if snake_head_x - 40 == x and snake_head_y == y:
                 adjoining_body_left = 1
                 continue
-            if snake_head_y + 40 == y and snake_head_x == x:
+            if snake_head_y - 40 == y and snake_head_x == x:
                 adjoining_body_top = 1
                 continue
-            if snake_head_y - 40 == y and snake_head_x == x:
+            if snake_head_y + 40 == y and snake_head_x == x:
                 adjoining_body_bottom = 1
                 continue
         
