@@ -66,6 +66,8 @@ class Agent:
                 last_Q_value = self.Q[self.s][self.a]
                 update_value = last_Q_value + self.alpha() * (self.reward(points, dead) + self.gamma * max(self.Q[cur_s])  - last_Q_value)
                 self.Q[self.s][self.a] = update_value # update Q-table!
+            else:
+                self.begin = True
             
             # stop the game if dead
             if dead:
@@ -84,25 +86,15 @@ class Agent:
                     max_v = self.Q[cur_s][i]
                     cur_a = i 
 
-            # print("x,y", state[0], state[1])
-            # print("Q: ", self.Q[self.s][self.a])
-            # print("All_Q: ", self.Q[self.s])
-            # print("N: ",self.N[self.s][self.a])
-            # print("Points: ", points)
-            # print("##############")
-
             self.N[cur_s][cur_a] += 1
 
             self.s = cur_s
             self.a = cur_a
 
-            self.begin = True
-
             return cur_a       
         # testing
         else:
             cur_s = self.state_index(state)
-            # print(self.Q[cur_s])
             real_a = 0
             max_v = -float("inf")
             for i in range(3, -1, -1):
