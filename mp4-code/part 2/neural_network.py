@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 """
     Minigratch Gradient Descent Function to train model
     1. Format the data
@@ -27,6 +27,7 @@ def minibatch_gd(epoch, w1, w2, w3, w4, b1, b2, b3, b4, x_train, y_train, num_cl
     losses = []
     num_train = x_train.shape[0]
     for it in range(epoch):
+        start = time.time()
         X_batch = x_train
         y_batch = y_train
         print("epoch: " + str(it))
@@ -43,6 +44,8 @@ def minibatch_gd(epoch, w1, w2, w3, w4, b1, b2, b3, b4, x_train, y_train, num_cl
             loss += loss1
         losses.append(loss)
         print(loss)
+        end = time.time()
+        print(end - start)
 
     return w1, w2, w3, w4, b1, b2, b3, b4, losses
 
