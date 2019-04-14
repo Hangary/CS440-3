@@ -64,7 +64,7 @@ class Agent:
             # updating
             if self.begin:
                 last_Q_value = self.Q[self.s][self.a]
-                update_value = last_Q_value + self.alpha() * (self.reward(points, dead) + self.gamma * max(self.Q[cur_s])  - last_Q_value)
+                update_value = last_Q_value + self.alpha() * (self.reward(points, dead, state) + self.gamma * max(self.Q[cur_s])  - last_Q_value)
                 self.Q[self.s][self.a] = update_value # update Q-table!
             else:
                 self.begin = True
@@ -106,14 +106,16 @@ class Agent:
     def alpha(self):
         return self.C/(self.C+self.N[self.s][self.a])
 
-    def reward(self, points, dead):
+    def reward(self, points, dead, state):
         if dead:
+            if (state[0], state[1]) in state[2]: 
+                return -10
             return -1
         elif points - self.points > 0:
             self.points = points
             return 1
         else:
-            return -0.1
+            return 0
 
     def state_index(self, state):
         adjoining_wall_x = 0
