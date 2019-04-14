@@ -15,6 +15,15 @@ class Agent:
         self.Q = utils.create_q_table()
         self.N = utils.create_q_table()
 
+        #last state
+        self.s = None
+        #last action
+        self.a = None
+        #points
+        self.points = 0
+        #begin
+        self.begin = False
+
     def train(self):
         self._train = True
         
@@ -33,6 +42,7 @@ class Agent:
         self.points = 0
         self.s = None
         self.a = None
+        self.begin = False
 
     def act(self, state, points, dead):
         '''
@@ -47,5 +57,113 @@ class Agent:
         (Note that [adjoining_wall_x=0, adjoining_wall_y=0] is also the case when snake runs out of the 480x480 board)
 
         '''
+        # training
+        if self._train:
+            cur_s = self.state_index(state)
 
-        return self.actions[0]
+            # updating
+            if self.begin:
+                last_Q_value = self.Q[self.s][self.a]
+                update_value = last_Q_value + self.alpha() * (self.reward(points, dead) + self.gamma * max(self.Q[cur_s])  - last_Q_value)
+                self.Q[self.s][self.a] = update_value # update Q-table!
+            else:
+                self.begin = True
+            
+            # stop the game if dead
+            if dead:
+                self.reset()
+                return 0
+
+            # action
+            max_v = -float("inf")
+            cur_a = 0
+            for i in range(3, -1, -1):
+                if self.N[cur_s][i] < self.Ne:
+                    cur_a = i
+                    break
+
+                if self.Q[cur_s][i] > max_v:
+                    max_v = self.Q[cur_s][i]
+                    cur_a = i 
+
+            self.N[cur_s][cur_a] += 1
+
+            self.s = cur_s
+            self.a = cur_a
+
+            return cur_a       
+        # testing
+        else:
+            cur_s = self.state_index(state)
+            real_a = 0
+            max_v = -float("inf")
+            for i in range(3, -1, -1):
+                if self.Q[cur_s][i] > max_v:
+                    max_v = self.Q[cur_s][i]
+                    real_a = i 
+            return real_a
+    
+    def alpha(self):
+        return self.C/(self.C+self.N[self.s][self.a])
+
+    def reward(self, points, dead):
+        if dead:
+            return -1
+        elif points - self.points > 0:
+            self.points = points
+            return 1
+        else:
+            return -0.1
+
+    def state_index(self, state):
+        adjoining_wall_x = 0
+        adjoining_wall_y = 0
+        food_dir_x = 0
+        food_dir_y = 0
+        adjoining_body_top = 0
+        adjoining_body_bottom = 0
+        adjoining_body_left = 0
+        adjoining_body_right = 0
+
+        snake_head_x = state[0]
+        snake_head_y = state[1]
+        snake_body = state[2]
+        food_x = state[3]
+        food_y = state[4]
+
+        if snake_head_x == 40:
+            adjoining_wall_x = 1
+        elif snake_head_x == 480:
+            adjoining_wall_x = 2
+        
+        if snake_head_y == 40:
+            adjoining_wall_y = 1
+        elif snake_head_y == 480:
+            adjoining_wall_y = 2
+        
+        if food_x < snake_head_x:
+            food_dir_x = 1
+        elif food_x > snake_head_x:
+            food_dir_x = 2
+
+        if food_y < snake_head_y:
+            food_dir_y = 1
+        elif food_y > snake_head_y:
+            food_dir_y = 2
+
+        for x,y in snake_body:
+            if snake_head_x + 40 == x and snake_head_y == y:
+                adjoining_body_right = 1
+                continue
+            if snake_head_x - 40 == x and snake_head_y == y:
+                adjoining_body_left = 1
+                continue
+            if snake_head_y - 40 == y and snake_head_x == x:
+                adjoining_body_top = 1
+                continue
+            if snake_head_y + 40 == y and snake_head_x == x:
+                adjoining_body_bottom = 1
+                continue
+        
+        return (adjoining_wall_x, adjoining_wall_y, food_dir_x, food_dir_y, adjoining_body_top, 
+        adjoining_body_bottom, adjoining_body_left, adjoining_body_right)
