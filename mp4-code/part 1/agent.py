@@ -95,12 +95,19 @@ class Agent:
         # testing
         else:
             cur_s = self.state_index(state)
-            real_a = 0
-            max_v = -float("inf")
-            for i in range(3, -1, -1):
-                if self.Q[cur_s][i] > max_v:
-                    max_v = self.Q[cur_s][i]
-                    real_a = i 
+            q_values = self.Q[cur_s]
+            actions = np.argsort(q_values)
+            real_a = actions[3]
+            if self.a == 2 and real_a == 3:
+                real_a = actions[2]
+            if self.a == 3 and real_a == 2:
+                real_a = actions[2]
+            if self.a == 0 and real_a == 1:
+                real_a = actions[2]
+            if self.a == 1 and real_a == 0:
+                real_a = actions[2]
+            
+            self.a = real_a
             return real_a
     
     def alpha(self):
@@ -109,7 +116,7 @@ class Agent:
     def reward(self, points, dead, state):
         if dead:
             if (state[0], state[1]) in state[2]: 
-                return -10
+                return -2
             return -1
         elif points - self.points > 0:
             self.points = points
