@@ -173,6 +173,19 @@ class Agent:
             if snake_head_y + 40 == y and snake_head_x == x:
                 adjoining_body_bottom = 1
                 continue
+            # modifications
+            if snake_head_x + 80 == x and snake_head_y == y:
+                adjoining_body_right = 2
+                continue
+            if snake_head_x - 80 == x and snake_head_y == y:
+                adjoining_body_left = 2
+                continue
+            if snake_head_y - 80 == y and snake_head_x == x:
+                adjoining_body_top = 2
+                continue
+            if snake_head_y + 80 == y and snake_head_x == x:
+                adjoining_body_bottom = 2
+                continue
         
         return (adjoining_wall_x, adjoining_wall_y, food_dir_x, food_dir_y, adjoining_body_top, 
         adjoining_body_bottom, adjoining_body_left, adjoining_body_right)
