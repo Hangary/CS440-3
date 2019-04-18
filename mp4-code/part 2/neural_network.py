@@ -1,5 +1,6 @@
 import numpy as np
 import time
+
 """
     Minigratch Gradient Descent Function to train model
     1. Format the data
